@@ -1,0 +1,43 @@
+#  Makefile for the aliaswin example.
+#
+#  Copyright (c) 1996 by Borland International, Inc.
+#
+#  Usage:   make -B -DWIN16         # 16 bit alias example
+#           make -B -DWIN16 -DDEBUG # 16 bit alias example with debug info
+#           make -B                 # 32 bit alias example
+#           make -B         -DDEBUG # 32 bit alias example with debug info
+#
+
+!if $d(WIN16)
+BCC=bcc
+TASM=tasm
+!else
+BCC=bcc32
+TASM=tasm32
+!endif
+
+!if $d(DEBUG)
+BCCDEBUG=-v
+ASMDEBUG=/zi
+!else
+BCCDEBUG=
+ASMDEBUG=
+!endif
+
+!if $d(MAKEDIR)
+THEINCLUDE=-I$(MAKEDIR)\..\include -L$(MAKEDIR)\..\lib
+!else
+THEINCLUDE=
+!endif
+
+alias1: library.lib
+        $(BCC) -W $(BCCDEBUG) $(THEINCLUDE) olduser.c   library.lib
+        $(BCC) -W $(BCCDEBUG) $(THEINCLUDE) newuser.c   library.lib
+        $(BCC) -W $(BCCDEBUG) $(THEINCLUDE) cppuser.cpp library.lib
+
+library.lib: library.c alias.asm
+        $(BCC) -c -W $(BCCDEBUG) $(THEINCLUDE) library.c
+        $(TASM) $(ASMDEBUG) alias.asm
+        if exist library.lib del library.lib
+        tlib library.lib +library +alias
+

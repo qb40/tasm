@@ -1,0 +1,55 @@
+# Make file for Turbo Assembler  WHEREIS sample project.
+#   Copyright (c) 1988, 1996 by Borland International, Inc.
+
+# The WHEREIS example takes advantage of many special TASM features.
+
+#       make -B                 Will build whereis.exe
+#       make -B -DDEBUG         Will build the debug version of whereis.exe
+
+!if $d(DEBUG)
+TASMDEBUG=/zi
+LINKDEBUG=/v
+!else
+TASMDEBUG=
+LINKDEBUG=
+!endif
+
+!if $d(MAKEDIR)
+THEINCLUDE=-I$(MAKEDIR)\..\include
+!else
+THEINCLUDE=
+!endif
+
+TASM_OPTIONS = $(TASMDEBUG) /dMDL=small /m $(THEINCLUDE)
+
+whereis.exe : whereis.obj  iparam.obj   ifindbyt.obj\
+              ibytecpy.obj ifindrep.obj ilocstrg.obj\
+              iwriteps.obj iskpwhit.obj iasciizs.obj\
+              iparsefn.obj ifindfil.obj idelchar.obj\
+              iexecdos.obj
+  tlink $(LINKDEBUG) whereis+iparam+ifindbyt+\
+        ibytecpy+ifindrep+ilocstrg+iwriteps\
+        +iskpwhit+iasciizs+iparsefn+ifindfil+idelchar+iexecdos
+
+.ASM.OBJ :
+  tasm $(TASM_OPTIONS) $*
+
+whereis.obj  : whereis.asm iwhglobl.inc kbd.inc dos.inc whusage.inc\
+               imacros.mac bios.inc ibios.mac idos.mac
+
+iexecdos.obj : iexecdos.asm idos.mac dos.inc imacros.mac ibios.mac bios.inc
+
+iwriteps.obj : iwriteps.asm idos.mac dos.inc imacros.mac ibios.mac bios.inc
+
+ifindfil.obj : ifindfil.asm iwhglobl.inc idos.mac idos.inc ibios.mac\
+               imacros.mac bios.inc kbd.inc dos.inc
+
+iasciizs.obj : iasciizs.asm ibios.mac imacros.mac bios.inc idos.mac dos.inc
+
+iparam.obj   : iparam.asm iwhglobl.inc dos.inc idos.inc kbd.inc
+
+ibytecpy.obj : ibytecpy.asm imacros.mac ibios.mac bios.inc
+
+ilocstrg.obj : ilocstrg.asm imacros.mac ibios.mac bios.inc
+
+iskpwhit.obj : iskpwhit.asm kbd.inc

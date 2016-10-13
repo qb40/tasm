@@ -1,0 +1,29 @@
+# Make file for Turbo Assembler ASMWIN sample project.
+#   Copyright (c) 1988, 1993 by Borland International, Inc.
+
+#       make -B                 Will build asmwin.exe
+#       make -B -DDEBUG         Will build the debug version of asmwin.exe
+
+!if $d(DEBUG)
+TASMDEBUG=/zi
+LINKDEBUG=/v /s
+!else
+TASMDEBUG=
+LINKDEBUG=
+!endif
+
+!if $d(MAKEDIR)
+THEINCLUDE=-I$(MAKEDIR)\..\include
+!else
+THEINCLUDE=
+!endif
+
+TASM_OPTIONS = $(TASMDEBUG) $(THEINCLUDE)
+
+asmwin.exe: asmwin.obj asmwin.def
+  tlink /Twe $(LINKDEBUG) ASMWIN, ASMWIN, ASMWIN,,ASMWIN
+
+asmwin.obj: asmwin.asm
+  TASM $(TASM_OPTIONS) ASMWIN,,
+
+

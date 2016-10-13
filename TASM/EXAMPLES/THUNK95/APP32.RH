@@ -1,0 +1,20 @@
+//----------------------------------------------------------------------------
+// Thunk95 example program
+// Copyright (c) 1996 by Borland International, All Rights Reserved
+//----------------------------------------------------------------------------
+#ifndef APP32_H
+#define APP32_H
+
+
+#define ID_ABOUTDLG     1
+
+#define ID_MAINMENU     1
+
+#define CM_ABOUT        101
+#define CM_EXIT         102
+#define CM_GETEMPLOYEE  103
+#define CM_GETSTRING    104
+#define CM_MULTIPLY     105
+#define CM_MULTIPLYREAL 106
+
+#endif   // APP32_H

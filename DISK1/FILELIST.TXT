@@ -1,0 +1,308 @@
+ALPHABETIZED LIST OF PRODUCT FILES
+----------------------------------
+
+ALIASDOS  PAK (Disk3) - Compression file containing the following:
+   ALIAS     ASM - assembly language example of aliases
+   CPPUSER   CPP - tasm alias example file
+   LIBRARY     C - tasm alias example file
+   MAKEFILE      - tasm alias example file
+   NEWUSER     C - tasm alias example file
+   OLDUSER     C - tasm alias example file
+   README    TXT - tasm readme file
+
+ALIASWIN  PAK (Disk3) - Compression file containing the following:
+   ALIAS     ASM - Tasm Examples Files
+   CPPUSER   CPP - Tasm Examples Files
+   CPPUSER   DEF - Tasm Examples Files
+   LIBRARY     C - Tasm Examples Files
+   MAKEFILE      - Tasm Examples Files
+   NEWUSER     C - Tasm Examples Files
+   NEWUSER   DEF - Tasm Examples Files
+   OLDUSER     C - Tasm Examples Files
+   OLDUSER   DEF - Tasm Examples Files
+   README    TXT - Tasm Examples Files
+
+ASMWIN    PAK (Disk3) - Compression file containing the following:
+   ASMWIN    ASM - Tasm Example file
+   ASMWIN    DEF - Tasm Example file
+   MAKEFILE      - Tasm example file
+
+CMD16     PAK (Disk3) - Compression file containing the following:
+   H2ASH     EXE - utility to convert .h files to .ash files
+   TASM      EXE - turbo assembler 3.0 dos
+   TASMX     EXE - turbo assembler 3.0 with dpmi support
+   TDSTRIP   EXE - utility to strip debug information from .exe files
+   TLINK     EXE - Borland turbo linker
+
+CMD32     PAK (Disk2) - Compression file containing the following:
+   B32TOOLS  PIF - 32 bit tools from a dos box
+   H2ASH32   EXE - Borland 32 bit include file conversion program
+   TASM32    EXE - turbo assembler for nt
+   TDSTRP32  EXE - 32 bit utility to strip debug info
+   TLINK32   EXE - Borland 32bit linker
+
+CMDINC    PAK (Disk3) - Compression file containing the following:
+   MMSYSTEM  INC - Borland C++ RTL header file
+   TOOLHELP  INC - Borland C++ RTL header file
+   WINDOWS   INC - Borland C++ RTL header file
+
+CMDLINE   PAK (Disk1) - Compression file containing the following:
+   32RTM     EXE - 32bit Windows extender
+   BRC       EXE - rc compatible shell program
+   BRC32     EXE - shell for brcc32.exe
+   BRCC      EXE - command line resource compiler
+   BRCC32    EXE - Borland resource compiler
+   BUILTINS  MAK - file containing default inference rules and macros for
+                   make.exe
+   DPMI16BI  OVL - Borland 16bit dpmi server
+   DPMI32VM  OVL - Borland 32bit dpmi server
+   GREP      COM - turbo grep program
+   HELP      ICO - Borland help icon
+   IMPDEF    EXE - 32 bit Import Library Tool
+   IMPLIB    EXE - 32 bit Import Library Tool
+   MAKE      EXE - protected mode version of program for managing projects
+   MAKER     EXE - real mode version of program for managing projects
+   MAKESWAP  EXE - Swap file creator for 32-bit DPMI-hosted tools
+   OBJXREF   EXE - object file cross-reference utility
+   RLINK     EXE - resource linker
+   RLINK32   DLL - 32 bit turbo linker
+   RTM       EXE - Borland dpmi run time manager
+   RW32CORE  DLL - 
+   RWRES     DLL - 
+   TASM      HLP - tasm help file
+   TDMEM     EXE - utility to display current memory mapping and usage
+   TDUMP     EXE - 32 bit tdump
+   THUNK     EXE - Microsoft Thunking utility
+   TLIB      EXE - 32 bit turbo librarian
+   TOUCH     EXE - program that updates a file's date and time
+   WINDPMI   386 - dpmi extender for enhanced mode Windows
+   WINSTUB   EXE - Windows stub program
+   WORKOPT   DOS - parameter file for resource compiler
+
+CPUID     PAK (Disk3) - Compression file containing the following:
+   CPUID     ASM - Tasm Examples Files
+   MAKEFILE      - Tasm Examples Files
+
+DLLWIN    PAK (Disk3) - Compression file containing the following:
+   DLLWIN    ASM - Tasm Example file
+   DLLWIN    DEF - Tasm Example file
+   MAKEFILE      - Tasm example file
+
+FILT      PAK (Disk3) - Compression file containing the following:
+   FILT      ASM - Tasm Examples Files
+   FILT      RSP - Tasm Examples Files
+   GLOBALS   INC - Tasm Examples Files
+   MAKEFILE      - Tasm Examples Files
+   OBYTEHI   ASM - Tasm Examples Files
+   OBYTELOW  ASM - Tasm Examples Files
+   OBYTENRM  ASM - Tasm Examples Files
+   OCMDNUM   ASM - Tasm Examples Files
+   OERREXIT  ASM - Tasm Examples Files
+   OFCREATE  ASM - Tasm Examples Files
+   OFILALOC  ASM - Tasm Examples Files
+   OFILCLOS  ASM - Tasm Examples Files
+   OFILEFIL  ASM - Tasm Examples Files
+   OFILFREE  ASM - Tasm Examples Files
+   OFILREAD  ASM - Tasm Examples Files
+   OFILWRIT  ASM - Tasm Examples Files
+   OFLFLUSH  ASM - Tasm Examples Files
+   OFOPENR   ASM - Tasm Examples Files
+   OFOPENW   ASM - Tasm Examples Files
+   OLOCASE   ASM - Tasm Examples Files
+   OPARSCMD  ASM - Tasm Examples Files
+   OPRCBYTE  ASM - Tasm Examples Files
+   OPROCDOC  ASM - Tasm Examples Files
+   OPROCLIN  ASM - Tasm Examples Files
+   OSETOPTN  ASM - Tasm Examples Files
+   OSPACES   ASM - Tasm Examples Files
+   OSTORSPC  ASM - Tasm Examples Files
+   OSTORTAB  ASM - Tasm Examples Files
+   OTABCLR   ASM - Tasm Examples Files
+   OTABNEXT  ASM - Tasm Examples Files
+   OTABRSET  ASM - Tasm Examples Files
+   OTABSET   ASM - Tasm Examples Files
+   OUPCASE   ASM - Tasm Examples Files
+   README        - Tasm Examples Files
+
+GROUPS    PAK (Disk3) - Compression file containing the following:
+   GROUPS    EXE - Program to setup Windows Group
+
+HEAP      PAK (Disk3) - Compression file containing the following:
+   DISPLAY   ASM - Tasm Examples Files
+   DISPLAY   INC - Tasm Examples Files
+   MAKEFILE      - Tasm Examples Files
+   MEM       ASM - Tasm Examples Files
+   MEM       INC - Tasm Examples Files
+   MEMTEST   ASM - Tasm Examples Files
+   VMTUTIL   INC - Tasm Examples Files
+
+INSTALL   EXE (Disk1) - installation program
+
+README    COM (Disk1) - 
+
+SHOW87    PAK (Disk3) - Compression file containing the following:
+   CONVERT1  INC - Tasm Example Files
+   CONVERT2  INC - Tasm Examples Files
+   MAKEFILE      - Tasm Examples Files
+   README        - Tasm Examples Files
+   SHOW87    ASM - Tasm Examples Files
+   SHOW87    DOC - Tasm Examples Files
+   VIDEO1    INC - Tasm Examples Files
+   VIDEO2    INC - Tasm Examples Files
+
+TA16LIB   PAK (Disk3) - Compression file containing the following:
+   IMPORT    LIB - Windows imports library
+
+TA32LIB   PAK (Disk3) - Compression file containing the following:
+   IMPORT32  LIB - 32 bit import library
+
+TASMDOC   PAK (Disk3) - Compression file containing the following:
+   MAKE      TXT - Make and Maker documentation file
+   TDUMP     TXT - Tdump documentation file
+   TD_ASM    TXT - Borland text file
+   TD_HDWBP  TXT - Borland text file
+   TD_RDME   TXT - Borland text file
+   TD_UTILS  TXT - Borland text file
+   TLIB      TXT - TLIB documentation file
+   TLINK     TXT - TLINK documentation file
+   TSM_HELP  TXT - Questions and answers about TASM
+   TSM_UTIL  TXT - TASM utility documentation
+
+TD32      PAK (Disk3) - Compression file containing the following:
+   TD32      EXE - 32 bit debugger
+   TD32      ICO - Windows icon for td32
+   TD32HELP  TDH - 32 bit debugger help
+   TD32INST  EXE - 32 bit debugger installation program
+   TD32INST  ICO - icon for td32 installation
+
+TDCMD     PAK (Disk3) - Compression file containing the following:
+   BWCC      DLL - custom controls dynamic link library
+   DUAL8514  DLL - super vga support for tdw and tprofw with an 8514 video
+                   card
+   STB       DLL - super vga support for tdw and tprofw with an stb video
+                   card
+   SVGA      DLL - video DLL for turbo debugger
+   SVGA32    DLL - Borland object file
+   TDKBD32   DLL - Dll for TDW
+   TDVID16   DLL - Dll for TDW
+   TDWGUI    DLL - turbo debugger for Windows; gui DLL
+   TDWINI    EXE - debugger video installation utility
+   TDWINI    HLP - debugger video help
+
+TDDOS     PAK (Disk2) - Compression file containing the following:
+   TD        EXE - turbo debugger program for dos
+   TD        PIF - turbo debugger for dos
+   TDDOS     ICO - td icon
+   TDHELP    TDH - turbo debugger 16 dos help file
+   TDINST    EXE - custom configuration program for td, td286, td386
+   TDOSINST  ICO - td icon
+   TDREMOTE  EXE - remote debugging utility for use at dos w/ td.exe/tdrf.exe
+   TDRF      EXE - remote file transfer utility for use with tdremote.exe
+
+TDWIN     PAK (Disk2) - Compression file containing the following:
+   JITIME    EXE - Borland object file
+   TDCON32   EXE - tdw console functionality
+   TDDEBUG   386 - device driver for 80386/80486 processors
+   TDW       EXE - turbo debugger program for Windows
+   TDW       ICO - td icon
+   TDWHELP   TDH - help file for the tdw debugger
+   TDWINST   EXE - custom configuration program for tdw
+   TDWINST   ICO - icon for tdwinst
+   TDWINTH   DLL - DLL for turbo debugger for Windows
+   WREMOTE   EXE - remote debugging utility for use in ms-Windows w/ td.exe
+   WRSETUP   EXE - utility to set parameters in ms-Windows for wremote.exe
+
+THUNK95   PAK (Disk1) - Compression file containing the following:
+   APP32     CPP - Windows95 Thunking example
+   APP32      RC - Windows95 Thunking example
+   APP32      RH - Windows95 Thunking example
+   DLL16     CPP - Thunk Example file
+   DLL16     DEF - Thunk Example file
+   DLL32     CPP - Thunk Example file
+   DLL32     DEF - Thunk Example file
+   MAKEFILE      - Thunk Example file
+   THUNK95   TXT - Thunk Example file
+   THUNKOBJ  THK - Thunk Example file
+   TOOLS     CPP - Windows95 Thunking example
+   TOOLS       H - Windows95 Thunking example
+
+TSM_INST  TXT (Disk1) - TASM installation instructions
+
+TSM_RDME  TXT (Disk1) - file contains last minute information
+
+UNPAK     EXE (Disk1) - program to decompress files
+
+USRGUIDE  PAK (Disk2) - Compression file containing the following:
+   ASMPSCL   ASM - Tasm Examples Files
+   AVERAGE   ASM - Tasm Examples Files
+   BIOS      INC - Tasm Examples Files
+   CALCAVG   CPP - Tasm Examples Files
+   CALLCT    CPP - Tasm Examples Files
+   CASMLINK  ASM - Tasm Examples Files
+   COMPROG   ASM - Tasm Examples Files
+   CONCISE   ASM - Tasm Examples Files
+   COUNT     ASM - Tasm Examples Files
+   COUNTADD  ASM - Tasm Example Files
+   COUNTER   CPP - Tasm Examples Files
+   COUNTLG   ASM - Tasm Examples Files
+   CSPEC     ASM - Tasm Examples Files
+   DOS       INC - Tasm Examples Files
+   DOTOTAL   ASM - Tasm Examples Files
+   ENVSTR    ASM - Tasm Examples Files
+   ENVSTR    PAS - Tasm Examples Files
+   EXCHMOD   ASM - Tasm Examples Files
+   EXCHMOD   PAS - Tasm Examples Files
+   EXEPROG   ASM - Tasm Examples Files
+   FINDCHAR  ASM - Tasm Examples Files
+   HELLO     ASM - Tasm Examples Files
+   HEX       ASM - Tasm Examples Files
+   HEX       PAS - Tasm Examples Files
+   HEXMOD    ASM - Tasm Examples Files
+   HEXMOD    PAS - Tasm Examples Files
+   KBD       INC - TASM Examples Files
+   LINK2ASM  CPP - TASM Examples Files
+   PRMSTACK  ASM - TASM Examples Files
+   SHOWTOT   CPP - TASM Examples Files
+   SOMESTR   ASM - TASM Examples Files
+   SOMESTR   PAS - TASM Examples Files
+   VAREXCH   ASM - TASM Examples Files
+   VAREXCH   PAS - TASM Examples Files
+
+WAP       PAK (Disk3) - Compression file containing the following:
+   MAKEFILE      - Windows assembly language example
+   WAP       ASM - Windows assembly language example
+   WAP       DEF - Windows assembly language example
+
+WAP32     PAK (Disk3) - Compression file containing the following:
+   MAKEFILE      - Tasm Examples Files
+   WAP32     ASM - Tasm Examples Files
+   WAP32     DEF - Tasm Examples Files
+   WIN32     INC - Tasm Examples Files
+
+WHEREIS   PAK (Disk3) - Compression file containing the following:
+   BIOS      INC - Tasm Examples Files
+   BIOSMAC   DOC - Tasm Examples Files
+   DOS       INC - Tasm Examples Files
+   DOSMAC    DOC - Tasm Examples Files
+   IASCIIZS  ASM - Tasm Examples Files
+   IBIOS     MAC - Tasm Examples Files
+   IBYTECPY  ASM - Tasm Examples Files
+   IDELCHAR  ASM - Tasm Examples Files
+   IDOS      INC - Tasm Examples Files
+   IDOS      MAC - Tasm Examples Files
+   IEXECDOS  ASM - Tasm Examples Files
+   IFINDBYT  ASM - Tasm Examples Files
+   IFINDFIL  ASM - Tasm Examples Files
+   IFINDREP  ASM - Tasm Examples Files
+   ILOCSTRG  ASM - Tasm Examples Files
+   IMACROS   MAC - Tasm Examples Files
+   IPARAM    ASM - Tasm Examples Files
+   IPARSEFN  ASM - Tasm Examples Files
+   ISKPWHIT  ASM - Tasm Examples Files
+   IWHGLOBL  INC - Tasm Examples Files
+   IWRITEPS  ASM - Tasm Examples Files
+   KBD       INC - TASM Examples Files
+   MAKEFILE      - Tasm Examples Files
+   WHEREIS   ASM - Tasm Examples Files
+   WHEREIS   DOC - Tasm Examples Files
+   WHUSAGE   INC - Tasm Examples Files

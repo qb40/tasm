@@ -1,0 +1,907 @@
+/*************************************************************************/
+                                 TLINK.TXT
+                               TURBO ASSEMBLER
+
+This file contains details on using TLINK with TASM.
+
+--------------------------------------------------------------------
+                        TABLE OF CONTENTS
+                        - - - - - - - - -
+   TLINK basics
+      TLINK.CFG
+      Response files
+   TLINK options
+   Module-definition file reference
+      CODE statement
+      DATA statement
+      DESCRIPTION statement
+      EXETYPE statement
+      EXPORTS statement
+      IMPORTS statement
+      LIBRARY statement
+      NAME statement
+      SEGMENTS statement
+      STACKSIZE statement
+      STUB statement
+      Module-definition file defaults
+
+--------------------------------------------------------------------
+
+TLINK and TLINK32 are command-line tools that combine object modules
+(.OBJ files) and library modules (.LIB files) to produce executable
+files. The IDE uses built-in versions of the linkers. Because the
+compiler automatically calls the linker, you don't need to use TLINK
+unless you suppress the linking stage of compiling (see the -c
+compiler option). Unless otherwise specified, instructions and options
+for TLINK also apply to TLINK32.
+
+
+TLINK basics
+============
+TLINK uses a configuration file called TLINK.CFG (TLINK32.CFG for
+TLINK32), a response file (optional), and command-line options to
+link object modules, libraries, and resources into an executable file
+(.EXE or .DLL). The IDE linker uses the options specified in the
+Project Options dialog box in the Linker section. The syntax for
+TLINK is:
+
+TLINK [@respfile][options] startupfile myobjs, exename, [mapfile],
+[mylibs] runtimelib [import], [deffile], [resfiles]
+
+
+  o  'options' are TLINK options that control how TLINK works.
+     For example, options specify whether to produce an .EXE
+     or a DLL file. TLINK options must be preceded by either
+     a slash (/) or a hyphen (-). To turn off a default option,
+     place a hyphen after the option (for example, -P-).
+
+  o  'startupfile' is a Borland initialization module for
+     executables or DLLs that arranges the order of the various
+     segments of the program. The initialization module must appear
+     first in the object file list. If it isn't first, the program
+     segments might not be placed in memory properly, which could
+     cause some frustrating program bugs. Failure to link the correct
+     initialization module usually results in a long list of error
+     messages telling you that certain identifiers are unresolved,
+     or that no stack has been created.
+
+  o  'myobjs' are the .OBJ files you want linked. Specify the path
+     if the files aren't in the current directory.
+
+  o  'exename' is the name you want given to the executable file
+     (.EXE or .DLL). If you don't specify an executable file name,
+     TLINK derives the name of the executable by appending .EXE or
+     .DLL to the first object file name listed. Be sure you give an
+     explicit name for the executable file name on the TLINK command
+     line. Otherwise, your program name will be something like
+     C02.EXE--which probably isn't what you wanted.
+
+  o  'mapfile' (optional) is the name you want given to the map
+     file. If you don't specify a name, the map file name is
+     given the same as exefile (but with the .MAP extension).
+
+  o  'mylibs' (optional) are the library files you want included at
+     link time. If these files aren't in the current directory or
+     the search path (see the /L option) then you must include their
+     paths.
+
+  o  'runtimelib' is the Borland run-time library. If no libraries
+     are included, none are linked.
+
+  o  'importlib' is the Windows import library, which provides
+     access to the Microsoft Windows API functions.
+
+  o  'deffile' is the module-definition file (.DEF) for a Windows
+     executable. If you don't specify a .DEF file, TLINK creates
+     an application based on default settings.
+
+  o  'resfiles' are a list of .RES files to bind to the executable.
+
+
+TLINK assumes or appends these extensions to file names that have
+none:
+
+  o  .OBJ for object files
+
+  o  .EXE for executable files
+
+  o  .DLL for dynamic-link libraries
+
+  o  .MAP for map files
+
+  o  .LIB for library files
+
+  o  .DEF for module-definition files
+
+  o  .RES for resource files
+
+
+TLINK.CFG
+---------
+TLINK uses a configuration file called TLINK.CFG (or TLINK32.CFG) for
+options that you'd normally type at the command-line (note that
+TLINK.CFG can only be options, not file names). Configuration files
+let you save options you use frequently, so that you don't have to
+continually retype them.
+
+TLINK looks for TLINK.CFG in the current directory, then in the
+directory from which TLINK was loaded.
+
+The following TLINK.CFG file tells TLINK to look for libraries first
+in the directory C:\BC4\LIB and then in C:\WINAPPS\LIB, to include
+debug information in the executables it creates, to create a detailed
+segment map, and to produce a Windows executable (.EXE not .DLL).
+
+	TLINK				TLINK32
+	-----				-------
+	/Lc:\bc4\lib;c:\winapps\lib	/Lc:\bc4\lib;c:\winapps\lib
+	/v /s				/v /s
+	/Twe				/Tpe
+
+
+Response files
+--------------
+Response files are ASCII files of options and file names for TLINK.EXE
+(and TLINK32.EXE) that you would normally type at the command line.
+Response files let you have a longer command line than most operating
+systems allow. Response files can include the same information as
+configuration files (command-line options), but they can also contain
+file names.
+
+Unlike the command line, a response file can be several lines long. To
+use more than one line in your response file, end each line with a
+plus character (+). Note that if a line ends with an option that uses
+the plus to turn it on (such as /v+), the + isn't treated as a line
+continuation character (to continue the line, use /v++).
+
+If you separate command-line components (such as .OBJ files from .LIB
+files) by lines in a response file, you must leave out the comma used
+to separate them on the command line. For example:
+
+	/c c0ws+
+	   myprog,myexe
+	   mymap
+	   mylib cws
+
+leaves out the commas you'd have to type if you put the information on
+the command line:
+
+	TLINK /c c0ws myprog, myexe, mymap, mylib cws
+
+To use response files:
+
+ 1) Type the command-line options and file names into an ASCII text
+    file and save the file.
+
+ 2) Type TLINK @[path]RESFILE.RSP, where RESFILE.RSP is the name
+    of your response file.
+
+You can specify more than one response file as follows:
+
+	TLINK /c @listobjs, myexe, mymap, @listlibs
+
+If you use a response file in addition to command-line options, the
+command-line options will override any options in the response file.
+For example, if you include -v in a response file, but you use -v- at
+the command-line, TLINK uses the command-line option -v-.
+
+
+TLINK options
+=============
+Unless otherwise specified, options work with both TLINK and TLINK32.
+Options are case-sensitive and must be preceded by either a slash (/)
+or a hyphen (-). To turn off a default option, place a hyphen after
+the option at the command-line (for example, -P- or /P-). You can
+place options anywhere in the command line. You don't need spaces
+after options (/m/f/c is the same as /m  /f  /c), but you must
+separate options and files with a space.
+
+The following table lists the TLINK options. A more detailed
+explanation of options follows the table.
+
+Option	For		Description
+------	---		-----------
+/3	16-bit		Accepts and links 32-bit code produced by TASM
+			or a compatible assembler.
+
+/ax	32-bit		Specifies application type, where
+			/aa targets Windows applications
+			/ap targets console applications.
+
+/A:dd	16/32-bit	Specifies page alignment within .EXE file.
+
+/B:xxx	32-bit	Specifies image base address (in hexadecimal).
+
+/c	16/32-bit	Treats case as significant in symbols.
+
+/C	16-bit		Treats case as significant in EXPORTS and
+			IMPORTS section of module-definition file.
+
+/d	16-bit		Warns you if there are duplicate symbols in
+			libraries.
+
+/E	16-bit		Enables processing of extended dictionaries in
+			libraries.
+
+/Enn	32-bit		Specifies maximum errors before termination.
+
+/e	16-bit		Ignores extended dictionaries in libraries.
+			This is the opposite of the /E option.
+
+/f	16-bit		Inhibits optimization of far calls to near
+			data.
+
+/Gn	16-bit		Discard nonresident name table.
+
+/Gr	16-bit		Transfer Resident names to nonresident names
+			table.
+
+/Gm	16/32-bit	Put Mangled names in map file.
+
+/i	16-bit		Initializes all segments.
+
+/l	16-bit		Includes source line numbers (lowercase L).
+
+/L	16/32-bit	Specifies library search paths.
+
+/m	16/32-bit	Creates map file with publics.
+
+/n	16-bit		Don't use default libraries.
+
+/o	16-bit		Overlays modules or libraries.
+
+/P	16-bit		Packs code segments.
+
+/R	16-bit		Sends options to RLINK.EXE. Possible
+			options are /Re, /Rk, /Rl, /m, /Rp, and /Rv.
+
+/Rexxx	32-bit		Renames the executable to xxx.
+
+/S:xxx	32-bit		Specifies stack size (in hexadecimal).
+
+/s	16-bit		Creates detailed map of segments.
+
+/t	16-bit		Creates a tiny-model DOS .COM file.
+
+/Tdx	16-bit		Specifies application target, where
+			/Tde means build a DOS .EXE file.
+
+/Tpx	32-bit		Specifies application target, where
+			/Tpe means build a 32-bit .EXE file.
+			/Tpd means build a 32-bit DLL.
+
+/Twx	16-bit		Specifies Windows 3.x target application,
+			where
+			/Twe builds a Windows .EXE file.
+			/Twd builds a Windows DLL.
+
+/v	16/32-bit	Includes full symbolic debug information.
+
+/wxxx	32-bit		Enable or disable warnings.
+
+/x	16/32-bit	Doesn't create a map file.
+
+/ye	16-bit		Uses expanded memory for swapping.
+
+/yx	16-bit		Configures TLINK's use of extended memory
+			swapping.
+
+
+/3 (32-bit code) lets you link 32-bit DOS object modules produced by
+TASM or a compatible assembler. This option increases the memory
+requirements for TLINK and slows down linking.
+
+/a (application type) lets you specify the type of EXE image:
+
+  o  /aa targets Windows applications.
+
+  o  /ap targets console applications that can be run in a window.
+
+/A:dd (align pages) specifies page alignment for code and data within
+the executable file where dd must be a decimal power of 2. For
+example, if you specify an alignment value of /A:12, the sections in
+the image are stored on 4096-byte boundaries. The operating system
+seeks pages for loading based on this alignment value. The default is
+/A:9, which means sections are aligned on 512-byte boundaries within
+the executable file.
+
+/B:xxxxxx (base address) specifies an image base address for an
+application. If this option is used, internal fixups are removed from
+the image, and the requested load address of the first object is set
+to the hexadecimal number given with the option. All successive
+objects are aligned on 64K linear address boundaries. This option
+makes applications smaller on disk, and improves both load-time and
+run-time performance since the operating system no longer has to apply
+internal fixups. Because NT loads all .EXE images at 64K, you're
+advised to link all .EXEs with /B:0x10000.
+
+/c (case sensitivity) makes the case significant in public and
+external symbols.
+
+/C (case sensitivity) makes the case significant in the EXPORTS and
+IMPORTS sections in module-definition files.
+
+/d (duplicate symbols) warns you if a symbol appears in more than one
+library file. If the symbol must be included in the program, TLINK
+uses the symbol from the first file containing the symbol that is
+specified on the command line (or in a response file). This option
+also warns you if symbols appear in both an .OBJ file and a .LIB file
+(TLINK uses the first one linked in and ignores the others).
+
+/Enn (maximum errors) specifies the maximum number of errors the
+linker reports before terminating. /E0 (the default) reports an
+infinite number of errors (that is, as many as possible).
+
+/E (extended dictionaries) processes extended dictionaries. The
+library files in Borland C++ contain an extended dictionary with
+information that lets TLINK use less memory and link faster with those
+libraries. You can add the extended dictionary to other library files
+using TLIB's /E option. Avoid using /E with programs linked with
+libraries that have been built without an extended dictionary
+(third-party libraries that have been provided without source code,
+for example). To use extended dictionaries, all linked libraries must
+have extended dictionaries.
+
+/e (ignore extended dictionaries) ignores extended dictionaries. This
+is the opposite of the /E option, and is the default.
+
+/f (inhibit far optimizations) inhibits the optimization of far calls
+to near data.
+
+/Gx (Goodies) are options where x can be
+	n = Discard nonresident name table. (16-bit only)
+	r = Transfer resident names to nonresident table. (16-bit only)
+	m = (TLINK32) Put mangled names in map file; this can help you
+	    identify how names are mangled.
+
+/i (uninitialized trailing segments) outputs uninitialized trailing
+segments into the executable file even if the segments don't contain
+data records.
+
+/l (line numbers) creates a section in the .MAP file for source-code
+line numbers. Linked .OBJ files must be compiled with debug
+information using -y or -v. If you use /x to suppress map file
+creation, the /l (lowercase L) option has no effect.
+
+/L (library search paths) lets you list directories for TLINK to
+search if you don't type an explicit path for a library or the C or
+C++ initialization module. TLINK searches the current directory first
+(where you typed TLINK). For example:
+
+	TLINK /Lc:\BC4\lib;c:\mylibs splash logo,,,utils .\logolib
+
+first searches the current directory for UTILS.LIB, then searches
+C:\BC4\LIB, then C:\MYLIBS. Because @WORD(LOGOLIB) explicitly names
+the current directory, TLINK doesn't search the libraries specified
+with the /L option to find LOGOLIB.LIB.
+
+/m (detailed map file) creates a more complete map than TLINK normally
+does by adding a list of sorted public symbols to the map file. This
+kind of map file is useful in debugging. Many debuggers can use the
+list of public symbols, which lets you refer to symbolic addresses
+when you're debugging. If you don't specify map file options (/m, /s,
+or /x), then the option Map File|Segments is used. See also /s.
+
+/M (map mangled) maps with mangled public names.
+
+/n (ignore default libraries) ignores default libraries specified by
+some compilers. Use this option when linking modules that are written
+in another language.
+
+/o (overlays) overlays code in all the modules or libraries that
+follow the option on the command line (this option works for DOS
+applications only). Use /o- on the command line to turn off overlays.
+If you specify a class name after this option, all the segments in
+that class are overlaid (you can do this for multiple classes). If you
+don't specify any name after this option, all segments of classes
+ending with CODE are overlaid. This option uses the default overlay
+interrupt number of 3FH. To specify a different interrupt number, use
+/o#xx, where xx is a two-digit hexadecimal number.
+
+/P (pack code segments) combines as many code segments as possible in
+one physical segment up to (and never greater than) the code-segment
+packing limit. TLINK starts a new segment if it needs to. The default
+code-segment packing limit is 8,192 bytes (8K). To change it, use /P=n
+where n specifies the number of bytes between 1 and 65,536. You would
+probably want the limit to be a multiple of 4K under 386 enhanced mode
+because of the paging granularity of the system.
+
+Although the optimum segment size in 386 enhanced mode is 4K, the
+default code-segment packing size is 8K because typical code segments
+are from 4K to 8K and 8K might pack more efficiently.
+
+Because each maintained segment has some system overhead, code-segment
+packing typically increases performance. /P- turns off code-segment
+packing (useful if you've turned it on in the configuration file and
+want to disable it for a particular link).
+
+/s (detailed segment map) creates a map file with the same features as
+the /m option, but adds a detailed segment map. If you don't specify
+map file options (/m, /s, or /x), then the option Map File|Segments is
+used. For each segment in each module, this map file includes the
+address, length in bytes, class, segment name, group, module, and ACBP
+information. If the same segment appears in more than one module, each
+module appears as a separate line. Except for the ACBP field, the
+information in the detailed segment map is self-explanatory.
+
+The ACBP field encodes the A (alignment), C (combination), and B (big)
+attributes into a set of four bit fields, as defined by Intel. TLINK
+uses only three of the fields, the A, C, and B fields. The ACBP value
+in the map is printed in hexadecimal. The following values of the
+fields must be OR'ed together to arrive at the ACBP value printed.
+
+Field				Value	Description
+-----				-----	-----------
+The A field (alignment)		00	An absolute segment.
+				20	A byte-aligned segment.
+				40	A word-aligned segment.
+				60	A paragraph-aligned segment.
+				80	A page-aligned segment.
+				A0	An unnamed absolute portion of
+					storage.
+
+The B field (big)		00	Segment less than 64K.
+				02	Segment exactly 64K.
+
+The C field (combination)	00	Cannot be combined.
+				08	A public combining segment.
+
+With the /s option, public symbols with no references are flagged
+"idle." An idle symbol is a publicly-defined symbol in a module that
+wasn't referenced by an EXTDEF record by any other module included in
+the link. For example, this fragment from the public symbol section of
+a map file indicates that symbols Symbol1 and Symbol3 aren't
+referenced by the image being linked:
+
+	0002:00000874	Idle	Symbol1
+	0002:00000CE4		Symbol2
+	0002:000000E7	Idle	Symbol3
+
+/S:xxxxxx (stack size) sets the application stack size in hexadecimal
+where xxxxxx is a hexadecimal string. Specifying the stack size with
+/S overrides any stack size setting in a module-definition file.
+
+/Tdx (DOS target) produces a DOS .EXE (/Tde) file.
+
+/Tpx (protected target) produces a protected mode .EXE (/Tpe) or .DLL
+file (/Tpd).
+
+/Twx (target type) produces a Windows .EXE (/Twe) or .DLL file (/Twd).
+This option isn't necessary if you include a module-definition file
+with an EXETYPE Windows statement because TLINK creates an application
+(.EXE) if the module-definition file has a NAME statement or a DLL if
+the module-definition file has a LIBRARY statement.
+
+/v (debugging information) includes debugging information in the
+executable file. If this option is found anywhere on the command line,
+debugging information is included in the executable file for all
+object modules that contain debugging information. You can use the /v+
+and /v- options to selectively enable or disable debugging information
+on a module-by-module basis (but not on the same command line as /v).
+For example, the command
+
+	TLINK mod1 /v+ mod2 mod3 /v- mod4
+
+includes debugging information for modules mod2 and mod3, but not for
+mod1 and mod4.
+
+/wxxx (warning control) turns on (/wxxx) or off (/w-xxx) TLINK
+warnings, where xxx can be one of the following (defaults mean TLINK
+will send the warning without you specifically turning it on):
+
+Option		Description
+------		-----------
+bdl		Using based linking in DLLs (might cause the DLL to
+		malfunction)
+
+def		No .DEF file; using defaults
+
+dpl		Warn duplicate symbol in .LIB
+
+dup		Duplicate symbol (warning for .OBJs)
+
+ent		No entry point
+
+imt		Import doesn't match previous definition
+
+srf		Self-relative fixup overflowed
+
+
+/x (no map file) tells TLINK to not generate a map file. TLINK usually
+creates map files that list segments in the program, the program start
+address, and any TLINK warning or error messages (the Map
+File|Segments option, which has no command-line option, is on by
+default).
+
+/ye (expanded memory) controls TLINK's use of expanded memory for I/O
+buffering. If TLINK needs more memory for active data structures
+(while reading object files or writing the executable file), it either
+clears buffers or swaps them to expanded memory.
+
+When reading files, TLINK clears the input buffer so that its space
+can be used for other data structures. When creating an executable, it
+writes the buffer to its correct place in the executable file. In both
+cases, you can substantially increase the link speed by swapping to
+expanded memory. By default, swapping to expanded memory is enabled,
+and swapping to extended memory is disabled. If swapping is enabled
+and no appropriate memory exists in which to swap, then swapping
+doesn't occur.
+
+This option has several forms, shown below:
+
+  o  /ye or /ye+ enables expanded memory swapping (this is the
+     default).
+
+  o  ye- disables expanded memory swapping (this is off by default).
+
+/yx (extended memory) controls TLINK's use of extended memory for I/O
+buffering. By default, TLINK can use up to 8MB of extended memory. You
+can change TLINK's use of extended memory with one of the following
+forms of this option:
+
+  o  /yx+ uses all available extended memory up to 8MB.
+
+  o  /yxn uses only up to n KB extended memory.
+
+
+Module-definition file reference
+================================
+This section describes module-definition files and the statements that
+appear in them. A module-definition file provides information to TLINK
+about the contents and system requirements of a Windows application.
+More specifically, a module-definition file does the following:
+
+  o  Names the .EXE or .DLL.
+
+  o  Identifies the application type.
+
+  o  Lists imported and exported functions.
+
+  o  Describes the code and data segment attributes, and lets you
+     specify attributes for additional code and data segments.
+
+  o  Specifies the size of the stack.
+
+  o  Provides for the inclusion of a stub program.
+
+
+CODE statement
+--------------
+CODE defines the default attributes of code segments. Code segments
+can have any name, but must belong to segment classes whose name ends
+in CODE (such as CODE or MYCODE). The syntax is:
+
+       TLINK			TLINK32
+CODE [FIXED|MOVEABLE]		[PRELOAD|LOADONCALL]
+     [DISCARDABLE|NONDISCARDABLE]	[EXECUTEONLY|EXECUTEREAD]
+     [PRELOAD|LOADONCALL]
+
+  o  'FIXED' (the default) means the segment remains at a fixed
+     memory location; 'MOVEABLE' means the segment can be moved.
+
+  o  'PRELOAD' means code is loaded when the calling program is
+     loaded. 'LOADONCALL' (the default) means the code is loaded
+     when called by the program.
+
+  o  'DISCARDABLE' means the segment can be discarded if it is no
+     longer needed (this implies MOVABLE). 'NONDISCARDABLE' (the
+     default) means the segment can't be discarded.
+
+  o  'EXECUTEONLY' means a code segment can only be executed.
+     'EXECUTEREAD' (the default) means the code segment can be
+     read and executed.
+
+  o  'PRELOAD' means the segment is loaded when the module is first
+     loaded. 'LOADONCALL' (the default) means the segment is loaded
+      when called.
+
+
+DATA statement
+--------------
+DATA defines attributes of data segments. The syntax is:
+
+	DATA [NONE | SINGLE | MULTIPLE]
+	     [READONLY | READWRITE]
+	     [PRELOAD | LOADONCALL]
+	     [SHARED | NONSHARED]
+
+  o  'NONE' means that there is no data segment created. This
+     option is available only for libraries. 'SINGLE' (the
+     default for .DLLs) means a single data segment is created
+     and shared by all processes. 'MULTIPLE' (the default for .EXEs)
+     means a data segment is created for each process.
+
+  o  'READONLY' means the data segment can be read only. 'READWRITE'
+     (the default) means the data segment can be read and written to.
+
+  o  'PRELOAD' means the data segment is loaded when a module that
+     uses it is first loaded. 'LOADONCALL' (the default) means the
+     data segment is loaded when it is first accessed (this is
+     ignored for 32-bit applications).
+
+  o  'SHARED' (the default for 16-bit .DLLs) means one copy of the
+     data segment is shared among all processes. 'NONSHARED' (the
+     default for programs and 32-bit .DLLs) means a copy of the
+     data segment is loaded for each process needing to use the
+     data segment.
+
+
+DESCRIPTION statement
+---------------------
+DESCRIPTION (optional) inserts text into the application module and is
+typically used to embed author, date, or copyright information. The
+syntax is:
+
+	DESCRIPTION 'Text'
+
+'Text' is an ASCII string delimited with single quotes.
+
+
+EXETYPE statement
+-----------------
+EXETYPE defines the default executable file (.EXE) header type for
+16-bit application. You can leave this section in for 32-bit
+application for backward compatibility, but if you need to change the
+EXETYPE, refer to the NAME statement. The syntax for EXETYPE is:
+
+	EXETYPE  WINDOWS
+
+
+EXPORTS statement
+-----------------
+EXPORTS defines the names and attributes of functions to be exported.
+The EXPORTS keyword marks the beginning of the definitions. It can be
+followed by any number of export definitions, each on a separate line.
+The syntax is:
+
+	EXPORTS ExportName [Ordinal] [RESIDENTNAME] [Parameter]
+
+  o  'ExportName' specifies an ASCII string that defines the
+     symbol to be exported:
+
+	EntryName [=InternalName]
+
+	'InternalName' is the name used within the application to
+	refer to this entry. 'EntryName' is the name listed in the
+	executable file's entry table and is externally visible.
+
+  o  'Ordinal' defines the function's ordinal value as follows:
+
+	@ordinal
+
+	where 'ordinal' is an integer value that specifies the
+	function's ordinal value.
+
+	When an application or DLL module calls a function exported
+	from a DLL, the calling module can refer to the function by
+	name or by ordinal value. It's faster to refer to the function
+	by ordinal because string comparisons aren't required to
+	locate the function. To use less memory, export a function by
+	ordinal (from the point of view of that function's DLL) and
+	import/call a function by ordinal (from the point of view of
+	the calling module).
+
+	When a function is exported by ordinal, the name resides in
+	the nonresident name table. When a function is exported by
+	name, the name resides in the resident name table. The
+	resident name table for a module is in memory whenever the
+	module is loaded; the nonresident name table isn't.
+
+  o  'RESIDENTNAME' specifies that the function's name must be
+     resident at all times. This is useful only when exporting
+     by ordinal (when the name wouldn't be resident by default).
+
+  o  'Parameter' is an optional integer value that specifies the
+     number of words the function expects to be passed as parameters.
+
+
+IMPORTS statement
+-----------------
+IMPORTS defines the names and attributes of functions to be imported
+from DLLs. Instead of listing imported DLL functions in the IMPORTS
+statement, you can do the following:
+
+  o  Specify an import library for the DLL in the TLINK command
+     line, or
+
+  o  Include the import library for the DLL in the project manager
+     in the IDE.
+
+If you're programming for 32-bits, you must write your own indirection
+to import any function, class, or data you want imported. The following
+is an example of importing data with TASM32:
+
+	_TEXT		segment dword public 'CODE'
+
+	extrn		_foo:dword	;This is an imported integer
+
+	_bar		PROC
+
+		mov	eax, -foo
+		mov	eax, [eax]
+		ret
+
+	_bar		ENDP
+
+	_TEXT		ends
+	end
+
+
+The IMPORTS keyword marks the beginning of the definitions; it is
+followed by any number of import definitions, each on a separate line.
+The syntax is:
+
+	IMPORTS  [InternalName=]ModuleName.Entry
+
+  o  'InternalName' is an ASCII string that specifies the unique
+     name the application uses to call the function.
+
+  o  'ModuleName' specifies one or more uppercase ASCII characters
+     that define the name of the executable module containing the
+     function. The module name must match the name of the
+     executable file. For example, the file SAMPLE.DLL has the
+     module name SAMPLE.
+
+  o  'Entry' specifies the function to be imported--either an ASCII
+     string that names the function or an integer that gives the
+     function's ordinal value.
+
+
+LIBRARY statement
+-----------------
+LIBRARY defines the name of a DLL module. A module-definition file can
+contain either a LIBRARY statement to indicate a DLL or a NAME
+statement to indicate a program.
+
+A library's module name must match the name of the executable file.
+For example, the library MYLIB.DLL has the module name MYLIB. The
+syntax is:
+
+	LIBRARY LibraryName [INITGLOBAL | INITINSTANCE]
+
+  o  'LibraryName' (optional) is an ASCII string that defines
+     the name of the library module. If you don't include a
+     LibraryName, TLINK uses the file name with the extension
+     removed. If the module-definition file includes neither a
+     NAME nor a LIBRARY statement, TLINK assumes a NAME statement
+     without a ModuleName parameter.
+
+  o  'INITGLOBAL' means the library-initialization routine is called
+     only when the library module is first loaded into memory.
+     'INITINSTANCE' means the library-initialization routine is called
+     each time a new process uses the library.
+
+
+NAME statement
+--------------
+NAME is the name of the application's executable module. The module
+name identifies the module when exporting functions. For 32-bit
+applications, NAME must appear before EXETYPE. If NAME and EXETYPE
+don't specify the same target type, the type listed with NAME is used.
+The syntax is:
+
+	NAME  ModuleName [WINDOWSAPI] | [WINDOWCOMPAT]
+
+  o  'ModuleName' (optional) specifies one or more uppercase ASCII
+     characters that name the executable module. The name must
+     match the name of the executable file. For example, an
+     application with the executable file SAMPLE.EXE has the module
+     name SAMPLE.
+
+     If ModuleName is missing, TLINK assumes the module name matches
+     the file name of the executable file. For example, if you don't
+     specify a module name and the executable file is named MYAPP.EXE,
+     TLINK assumes the module name is MYAPP.
+
+     If the module-definition file includes neither a NAME nor a
+     LIBRARY statement, TLINK assumes a NAME statement without a
+     ModuleName parameter.
+
+  o  'WINDOWAPI' is a Windows executable, and is equivalent to the
+     TLINK32 option /aa.
+
+  o  'WINDOWCOMPAT' is a Windows-compatible character-mode executable,
+     and is equivalent to the TLINK32 option /ap.
+
+
+SEGMENTS statement
+------------------
+SEGMENTS defines the segment attributes of additional code and data
+segments. The syntax is:
+
+	SEGMENTS
+		SegmentName [CLASS 'ClassName'] [MinAlloc]
+		[SHARED | NONSHARED]
+		[PRELOAD | LOADONCALL]
+
+  o  'SegmentName' is a character string that names the new segment.
+     It can be any name, including the standard segment names _TEXT
+     and _DATA, which represent the standard code and data segments.
+
+  o  'ClassName' (optional) is the class name of the specified
+     segment. If no class name is specified, TLINK uses the
+     class name CODE.
+
+  o  'MinAlloc' (optional) is an integer that specifies the minimum
+     allocation size for the segment. TLINK and TLINK32 ignore this
+     value.
+
+  o  'SHARED' (the default for 16-bit .DLLs) means one copy of the
+     segment is shared among all processes. 'NONSHARED' (the default
+     for programs and 32-bit .DLLs) means a copy of the segment is
+     loaded for each process needing to use the data segment.
+
+  o  'PRELOAD' means that the segment is loaded immediately;
+     'LOADONCALL' means that the segment is loaded when it is
+     accessed or called (this is ignored by TLINK32). The resource
+     compiler might override the LOADONCALL option and preload
+     segments instead.
+
+
+STACKSIZE statement
+-------------------
+STACKSIZE defines the number of bytes needed by the application for
+its local stack. An application uses the local stack whenever it makes
+function calls. Don't use the STACKSIZE statement for dynamic-link
+libraries. The syntax is:
+
+	STACKSIZE bytes
+
+bytes is an integer value that specifies the stack size in bytes.
+
+
+STUB statement
+--------------
+STUB appends a DOS executable file specified by FileName to the
+beginning of the module. The executable stub displays a warning
+message and terminates if the user attempts to run the executable stub
+in the wrong environment (running a Windows application under DOS, for
+example).
+
+Borland C++ adds a built-in stub to the beginning of a Windows
+application unless a different stub is specified with the STUB
+statement. You shouldn't use the STUB statement to include WINSTUB.EXE
+because the linker does this automatically. The syntax is:
+
+	STUB 'FileName'
+
+'FileName' is the name of the DOS executable file to be appended to
+the module. The name must have the DOS file name format.
+
+If the file named by FileName isn't in the current directory, TLINK
+searches for the file in the directories specified by the PATH
+environment variable.
+
+
+Module-definition file defaults
+-------------------------------
+The module-definition file isn't strictly necessary to produce a
+Windows executable under borland C++.
+
+If no module-definition file is specified, the following defaults are
+assumed:
+
+	CODE		PRELOAD MOVEABLE DISCARDABLE
+	DATA		PRELOAD MOVEABLE MULTIPLE (for applications)
+			PRELOAD MOVEABLE SINGLE (for DLLs)
+			HEAPSIZE	4096
+			STACKSIZE		5120 (1048576 for TLINK32)
+
+To replace the EXETYPE statement, the Borland C++ linker can discover
+what kind of executable you want to produce by checking settings in
+the IDE or options on the command line.
+
+You can include an import library to substitute for the IMPORTS
+section of the module definition file.
+
+If you're coding in C or C++, you can use the _export keyword in the
+definitions of export functions to remove the need for an EXPORTS
+section. Note, however, that if _export is used to export a function,
+that function is exported by name rather than by ordinal (ordinal is
+usually more efficient).
+
+If you want to change various attributes from the default, you'll need
+to have a module-definition file.
+
+/**************************** END OF FILE ********************************/
+

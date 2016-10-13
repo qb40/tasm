@@ -1,0 +1,773 @@
+/*************************************************************************/
+                             TURBO DEBUGGER
+                        Assembler-level debugging
+
+This file contains information about Assembler-level debugging. The
+contents of the file are as follows:
+
+1. When source debugging isn't enough
+2. The assembler
+3. Assembler-specific bugs
+4. Inline assembler tips
+5. Inline assembler keywords
+6. The Numeric Processor window
+
+The material in this file is for programmers who are familiar with
+programming the 80x86 processor family in assembler. You don't need
+to use the information in this chapter to debug your programs, but
+there are certain problems that might be easier to find using
+the techniques discussed here.
+
+
+===================================================================
+1. When source debugging isn't enough
+===================================================================
+Sometimes, however, you can gain insight into a problem by looking
+at the exact instructions that the compiler generated, the contents
+of the CPU registers, and the contents of the stack. To do this,
+you need to be familiar with both the 80x86 family of processors
+and with how the compiler turns your source code into machine
+instructions. Because many excellent books are available about the
+internal workings of the CPU, we won't go into that in detail here.
+You can quickly learn how the compiler turns your source code into
+machine instructions by looking at the instructions generated for
+each line of source code within the CPU window.
+
+Turbo Debugger can detect an 8087, 80287, 80387, or 80486 numeric
+coprocessor and disassemble those instructions if a floating-point
+chip or emulator is present.
+
+The instruction mnemonic RETF indicates that this is a far return
+instruction. The normal RET mnemonic indicates a near return.
+
+Where possible, the target of JMP and CALL instructions is
+displayed symbolically. If CS:IP is a JMP or conditional jump
+instruction, an up-arrow or down-arrow that shows jump direction
+will be displayed only if the executing instruction will cause the
+jump to occur. Also, memory addresses used by MOV, ADD, and other
+instructions display symbolic addresses.
+
+
+===================================================================
+2. The assembler
+===================================================================
+If you use the Assemble command in the Code pane local menu, Turbo
+Debugger lets you assemble instructions for the 8086, 80186, 80286,
+80386, and 80486 processors, and also for the 8087, 80287, and 80387
+numeric coprocessors.
+
+When you use Turbo Debugger's built-in assembler to modify your program,
+the changes you make are not permanent. If you reload your program Run|
+Program Reset, or if you load another program using File|Open,
+you'll lose any changes you've made.
+
+Normally you use the assembler to test an idea for fixing your program.
+Once you've verified that the change works, you must change your source
+code and recompile and link your program.
+
+The following sections describe the differences between the built-
+in assembler and the syntax accepted by Borland C++'s inline
+assembler.
+
+
+Operand address size overrides
+==============================
+For the call (CALL), jump (JMP), and conditional jump (JNE, JL, and
+so forth) instructions, the assembler automatically generates the
+smallest instruction that can reach the destination address. You
+can use the NEAR and FAR overrides before the destination address
+to assemble the instruction with a specific size. For example,
+
+  CALL FAR XYZ
+  JMP  NEAR A1
+
+
+Memory and immediate operands
+-----------------------------
+When you use a symbol from your program as an instruction operand,
+you must tell the built-in assembler whether you mean the contents
+of the symbol or the address of the symbol. If you use just the
+symbol name, the assembler treats it as an address, exactly as if
+you had used the assembler OFFSET operator before it. If you put
+the symbol inside brackets ([ ]), it becomes a memory reference.
+For example, if your program contains the data definition
+
+  A    DW 4
+
+then "A" references the area of memory where A is stored.
+
+When you assemble an instruction or evaluate an assembler
+expression to refer to the contents of a variable, use the name of
+the variable alone or between brackets:
+
+  mov dx,a
+  mov ax,[a]
+
+To refer to the address of the variable, use the OFFSET operator:
+
+  mov ax,offset a
+
+
+Operand data size overrides
+===========================
+For some instructions, you must specify the operand size using one
+of the following expressions before the operand:
+
+  BYTE PTR
+  WORD PTR
+
+Here are examples of instructions using these overrides:
+
+  add BYTE PTR[si],10
+  mov WORD PTR[bp+10],99
+
+In addition to these size overrides, you can use the following
+overrides to assemble 8087/80287/80387/80486 numeric processor
+instructions:
+
+  DWORD PTR
+  QWORD PTR
+  TBYTE PTR
+
+Here are some examples using these overrides:
+
+  fild QWORD PTR[bx]
+  stp  TBYTE PTR[bp+4]
+
+
+String instructions
+===================
+When you assemble a string instruction, you must include the size
+(byte or word) as part of the instruction mnemonic. The assembler
+does not accept the form of the string instructions that uses a
+sizeless mnemonic with an operand that specifies the size. For
+example, use STOSW rather than STOS WORD PTR[di].
+
+
+=========================================
+3. Assembler-specific bugs
+=========================================
+This section, which covers some of the common pitfalls of assembly
+language programming, is intended for people who have Turbo Assembler
+or use inline assembler in C++ programs. You should refer to the
+Turbo Assembler User's Guide for a fuller explanation on these
+often encountered errors--and tips on how to avoid them.
+
+Forgetting to return to DOS
+===========================
+In C++, a program ends automatically when there is no more code to
+execute, even if no explicit termination command was written into the
+program. Not so in assembly language, where only those actions that
+you explicitly request are performed. When you run a program that has
+no command to return to DOS, execution simply continues right past the
+end of the program's code and into whatever code happens to be in the
+adjacent memory.
+
+
+Forgetting a RET instruction
+============================
+The proper invocation of a subroutine consists of a call to the subroutine
+from another section of code, execution of the subroutine, and a return
+from the subroutine to the calling code. Remember to insert a RET
+instruction in each subroutine, so that the RETurn to the calling code
+occurs. When you're typing a program, it's easy to skip a RET and end
+up with an error.
+
+
+Generating the wrong type of return
+===================================
+The PROC directive has two effects. First, it defines a name by which a
+procedure can be called. Second, it controls whether the procedure is a near
+or far procedure.
+
+The RET instructions in a procedure should match the type of the procedure,
+shouldn't they?
+
+Yes and no. The problem is that it's possible and often desirable to group
+several subroutines in the same procedure. Since these subroutines lack an
+associated PROC directive, their RET instructions take on the type of the
+overall procedure, which is not necessarily the correct type for the
+individual subroutines.
+
+
+Reversing operands
+==================
+To many people, the order of instruction operands in 8086 assembly language
+seems backward (and there is certainly some justification for this
+viewpoint). If the line
+
+  mov  ax,bx
+
+meant "move AX to BX," the line would scan smoothly from left to right, and
+this is exactly the way in which many microprocessor manufacturers have
+designed their assembly languages.
+
+However, Intel took a different approach with 8086 assembly language; for
+us, the line means "move BX to AX," and that can sometimes cause confusion.
+
+
+Forgetting the stack or reserving a too-small stack
+===================================================
+In most cases, you're treading on thin ice if you don't explicitly allocate
+space for a stack. Programs without an allocated stack sometimes run, but
+there is no assurance that these programs will run under all circumstances.
+DOS programs can have a .STACK directive to reserve space for the stack.
+For each program, you should reserve more than enough space for the
+deepest stack the program can use.
+
+
+Calling a subroutine that wipes out registers
+=============================================
+When you're writing assembler code, it's easy to think of the registers
+as local variables, dedicated to the use of the procedure you're working
+on at the moment. In particular, there's a tendency to assume that
+registers are unchanged by calls to other procedures. It just isn't
+so--the registers are global variables, and each procedure can preserve or
+destroy any or all registers.
+
+
+Using the wrong sense for a conditional jump
+============================================
+The profusion of conditional jumps in assembly language (JE, JNE, JC,
+JNC, JA, JB, JG, and so on) allows tremendous flexibility in writing
+code--and also makes it easy to select the wrong jump for a given purpose.
+Moreover, since condition-handling in assembly language requires at least
+two separate lines, one for the comparison and one for the conditional
+jump (it requires many more lines for complex conditions), assembly
+language condition-handling is less intuitive and more prone to errors than
+condition-handling in C++.
+
+
+Forgetting about REP string overrun
+===================================
+String instructions have a curious property: After they're executed, the
+pointers they use wind up pointing to an address 1 byte away (or 2 bytes
+for a word instruction) from the last address processed. This can cause
+some confusion with repeated string instructions, especially REP SCAS and
+REP CMPS.
+
+
+Relying on a zero CX to cover a whole segment
+=============================================
+Any repeated string instruction executed with CX equal to zero does nothing.
+This can be convenient in that there's no need to check for the zero
+case before executing a repeated string instruction; on the other hand,
+there's no way to access every byte in a segment with a byte-sized string
+instruction.
+
+
+Using incorrect direction flag settings
+=======================================
+When a string instruction is executed, its associated pointer or pointers--
+SI or DI or both--increment or decrement. It all depends on the state of the
+direction flag.
+
+The direction flag can be cleared with CLD to cause string instructions to
+increment (count up) and can be set with STD to cause string instructions to
+decrement (count down). Once cleared or set, the direction flag stays in the
+same state until either another CLD or STD is executed, or until the flags
+are popped from the stack with POPF or IRET. While it's handy to be able to
+program the direction flag once and then execute a series of string
+instructions that all operate in the same direction, the direction flag can
+also be responsible for intermittent and hard-to-find bugs by causing the
+behavior of string instructions to depend on code that executed much earlier.
+
+
+Using the wrong sense for a repeated string comparison
+======================================================
+The CMPS instruction compares two areas of memory; the SCAS instruction
+compares the accumulator to an area of memory. Prefixed by REPE, either
+of these instructions can perform a comparison until either CX becomes
+zero or a not-equal comparison occurs. Unfortunately, it's easy to become
+confused about which of the REP prefixes does what.
+
+
+Forgetting about string segment defaults
+========================================
+Each of the string instructions defaults to using a source segment (if any)
+of DS, and a destination segment (if any) of ES. It's easy to forget this
+and try to perform, say, a STOSB to the data segment, since that's where
+all the data you're processing with non-string instructions normally resides.
+
+
+Converting incorrectly from byte to word operations
+===================================================
+In general, it's desirable to use the largest possible data size (usually
+word, but dword on an 80386) for a string instruction, since string
+instructions with larger data sizes often run faster.
+
+There are a couple of potential pitfalls here. First, the conversion from a
+byte count to a word count by a simple
+
+  shr cx,1
+
+loses a byte if CX is odd, since the least-significant bit is shifted out.
+
+Second, make sure you remember SHR divides the byte count by two. Using,
+say, STOSW with a byte rather than a word count can wipe out other data
+and cause problems of all sorts.
+
+
+Using multiple prefixes
+=======================
+String instructions with multiple prefixes are error-prone and should
+generally be avoided.
+
+
+Relying on the operand(s) to a string instruction
+=================================================
+The optional operand or operands to a string instruction are used for data
+sizing and segment overrides only, and do not guarantee that the memory
+location referenced is accessed.
+
+
+Wiping out a register with multiplication
+=========================================
+Multiplication--whether 8 bit by 8 bit, 16 bit by 16 bit, or 32 bit by 32
+bit--always destroys the contents of at least one register other than the
+portion of the accumulator used as a source operand.
+
+
+Forgetting that string instructions alter several registers
+===========================================================
+The string instructions, MOVS, STOS, LODS, CMPS, and SCAS, can affect several
+of the flags and as many as three registers during execution of a single
+instruction. When you use string instructions, remember that SI, DI, or
+both either increment or decrement (depending on the state of the direction
+flag) on each execution of a string instruction. CX is also decremented at
+least once, and possibly as far as zero, each time a string instruction with
+a REP prefix is used.
+
+
+Expecting certain instructions to alter the carry flag
+======================================================
+While some instructions affect registers or flags unexpectedly, other
+instructions don't even affect all the flags you might expect them to.
+
+
+Waiting too long to use flags
+=============================
+Flags last only until the next instruction that alters them, which is
+usually not very long. It's a good practice to act on flags as soon as
+possible after they're set, thereby avoiding all sorts of potential bugs.
+
+
+Confusing memory and immediate operands
+=======================================
+An assembler program may refer either to the offset of a memory variable or
+to the value stored in that memory variable. Unfortunately, assembly language
+is neither strict nor intuitive about the ways in which these two types of
+references can be made, and as a result, offset and value references to a
+memory variable are often confused.
+
+
+Failing to preserve everything in an interrupt handler
+======================================================
+Every interrupt handler should explicitly preserve the contents of all
+registers. While it is valid to preserve explicitly only those registers
+that the handler modifies, it's good insurance just to push all registers
+on entry to an interrupt handler and pop all registers on exit.
+
+
+Forgetting group overrides in operands and data tables
+======================================================
+Segment groups let you partition data logically into a number of areas
+without having to load a segment register every time you want to switch
+from one of those logical data areas to another.
+
+
+
+=========================================
+4. Inline assembler tips
+=========================================
+
+Looking at raw hex data
+=======================
+You can use the Data|Add Watch and Data| Evaluate/Modify commands with
+a format modifier to look at raw data dumps. For example, if your
+language is Assembler,
+
+  [ES:DI],20m
+
+specifies that you want to look at a raw hex memory dump of the 20 bytes
+pointed to by the ES:DI register pair.
+
+
+Source-level debugging
+======================
+You can step through your assembler code using a Module window just as
+with any of the high-level languages. If you want to see the register
+values, you can put a Registers window to the right of the Module window.
+
+Sometimes, you may want to use a CPU window and see your source code as
+well. To do this, open a CPU window and choose the Code pane's Mixed
+command until it reads Both. That way you can see both your source code
+and machine code bytes. Remember to zoom the CPU window (by pressing F5)
+if you want to see the machine code bytes.
+
+
+Examining and changing registers
+================================
+The obvious way to change registers is to highlight a register in either
+a CPU window or Registers window. A quick way to change a register is to
+choose Data|Evaluate/Modify. You can enter an assignment expression that
+directly modifies a register's contents. For example,
+
+   SI = 99
+
+loads the SI register with 99.
+
+Likewise, you can examine registers using the same technique. For example,
+
+   Alt-D E AX
+
+shows you the value of the AX register.
+
+
+=========================================
+5. Inline assembler keywords
+=========================================
+This section lists the instruction mnemonics and other special symbols that
+you use when entering instructions with the inline assembler. The keywords
+presented here are the same as those used by Turbo Assembler.
+
+
+8086/80186/80286 instructional mnemonics
+_________________________________________
+  AAA        INC        LIDT**     REPNZ
+  AAD        INSB*      LLDT**     REPZ
+  AAM        INSW*      LMSW**     RET
+  AAS        INT        LOCK       REFT
+  ADC        INTO       LODSB      ROL
+  ADD        IRET       LODSW      ROR
+  AND        JB         LOOP       SAHF
+  ARPL**     JBE        LOOPNZ     SAR
+  BOUND*     JCXZ       LOOPZ      SBB
+  CALL       JE         LSL**      SCASB
+  CLC        JL         LTR**      SCASW
+  CLD        JLE        MOV        SGDT**
+  CLI        JMP        MOVSB      SHL
+  CLTS**     JNB        MOVSW      SHR
+  CMC        JNBE       MUL        SLDT**
+  CMP        JNE        NEG        SMSW**
+  CMPSB      JNLE       NOP        STC
+  CMPSW      JNO        NOT        STD
+  CWD        JNP        OR         STI
+  DAA        JO         OUT        STOSB
+  DAS        JP         OUTSB      STOSW
+  DEC        JS         OUTSW      STR**
+  DIV        LAHF       POP        SUB
+  ENTER*     LAR**      POPA*      TEST
+  ESC        LDS        POPF       WAIT
+  HLT        LEA        PUSH       VERR**
+  IDIV       LEAVE      PUSHA*     VERW**
+  IMUL       LES        PUSHF      XCHG
+  IN         LGDT**     RCL        XLAT
+                                   XOR
+___________________________________________
+
+* Available only when running on the 186 and 286 processor
+** Available only when running on the 286 processor
+
+
+Turbo Debugger supports all 80386 and 80387 instruction
+mnemonics and registers:
+
+80386 instruction mnemonics
+_________________________________________
+
+  BSF        LSS         SETG        SETS
+  BSR        MOVSX       SETL        SHLD
+  BT         MOVZX       SETLE       SHRD
+  BTC        POPAD       SETNB       CMPSD
+  BTR        POPFD       SETNE       STOSD
+  BTS        PUSHAD      SETNL       LODSD
+  CDQ        PUSHFD      SETNO       MOVSD
+  CWDE       SETA        SETNP       SCASD
+  IRETD      SETB        SETNS       INSD
+  LFS        SETBE       SETO        OUTSD
+  LGS        SETE        SETP        JECXZ
+__________________________________________
+
+80486 instruction mnemonics
+_________________________________________
+
+       BSWAP               INVLPG
+       CMPXCHG             WBINVD
+       INVD                XADD
+_________________________________________
+
+80386 registers
+_________________________________________
+
+       EAX                 EDI
+       EBX                 EBP
+       ECX                 ESP
+       EDX                 FS
+       ESI                 GS
+_________________________________________
+
+CPU registers
+__________________________________________________________________
+
+Byte registers            AH, AL, BH, BL, CH, CL, DH, DL
+
+Word registers            AX, BX, CX, DX, SI, DI, SP, BP, FLAGS
+
+Segment registers         CS, DS, ES, SS
+
+Floating registers        ST, ST(0), ST(1), ST(2), ST(3), ST(4),
+                          ST(5), ST(6), ST(7)
+___________________________________________________________________
+
+Special keywords
+_________________________________________
+
+       WORD PTR            TBYTE PTR
+       BYTE PTR            NEAR
+       DWORD PTR           FAR
+       QWORD PTR           SHORT
+_________________________________________
+
+8087/80287 numeric coprocessor instruction mnemonics
+____________________________________________________
+  FABS       FIADD      FLDL2E     FST
+  FADD       FIACOM     FLDL2T     FSTCW
+  FADDP      FIACOMP    FLDPI      FSTENV
+  FBLD       FIDIV      FLDZ       FSTP
+  FBSTP      FIDIVR     FLD1       FSTSW**
+  FCHS       FILD       FMUL       FSUB
+  FCLEX      FIMUL      FMULP      FSUBP
+  FCOM       FINCSTP    FNOP       FSUBR
+  FCOMP      FINIT      FNSTS**    FSUBRP
+  FCOMPP     FIST       FPATAN     FTST
+  FDECSTP    FISTP      FPREM      FWAIT
+  FDISI      FISUB      FPTAN      FXAM
+  FDIV       FISUBR     FRNDINT    FXCH
+  FDIVP      FLD        FSAVENT    FXTRACT
+  FDIVR      FLDCWR     FSCALE     FYL2X
+  FDIVRP     FLDENV     FSETPM*    FYL2XPI
+  FENI       FLDLG2     FSQRT      F2XM1
+  FFREE      FLDLN2     
+_____________________________________________________
+
+* Available only when running on the 287 numeric coprocessor.
+** On the 80287, the fstsw instruction can use the AX register as an
+   operand, as well as the normal memory operand.
+
+
+80387 instruction mnemonics
+_________________________________________
+
+       FCOS                FUCOM
+       FSIN                FUCOMP
+       FPREM1              FUCOMPP
+       FSINCOS
+_________________________________________
+
+
+The 80x87 coprocessor chip and emulator
+=======================================
+This section is for programmers who are familiar with the operation
+if the 80x87 math coprocessor. If your program uses floating-point
+numbers, Turbo Debugger lets you examine and change the state of the numeric
+coprocessor or, if the coprocessor is emulated, examine the state of the
+software emulator. (Windows permits you only to examine the state of the
+emulator, not to change it.)  You don't need to use the capabilities
+described in this chapter to debug programs that use floating-point numbers,
+although some very subtle bugs may be easier to find.
+
+In this section, we discuss the differences between the 80x87 chip and
+the software emulator. We also describe the Numeric Processor window and
+show you how to examine and modify the floating-point registers, the status
+bits, and the control bits.
+
+
+The 80x87 chip vs. the emulator
+===============================
+TDW automatically detects whether your program is using the math chip or the
+emulator and adjusts its behavior accordingly.
+
+Note that most programs use either the emulator or the math chip, not both
+within the same program. If you have written special assembler code that
+uses both, TDW won't be able to show you the status of the math chip; it
+reports on the emulator only.
+
+
+=========================================
+6. The Numeric Processor window
+=========================================
+You create a Numeric Processor window by choosing the View|Numeric Processor
+command from the menu bar. The line at the top of the window shows the
+current instruction pointer, opcode, and data pointer. The instruction
+pointer is both shown as a 20-bit physical address. The data pointer is
+either a 16-bit or a 20-bit address, depending on the memory model. You
+can convert 20-bit addresses to segment and offset form by using the first
+four digits as the segment value and the last digit as the offset value.
+
+For example, if the top line shows IPTR=5A669, you can treat this as the
+address 5a66:9 if you want to examine the current data and instruction in
+a CPU window. This window has three panes: The left pane (Register pane)
+shows the contents of the floating-point registers, the middle pane
+(Control pane) shows the control flags, and the right pane (Status pane)
+shows the status flags.
+
+The top line shows you the following information about the last floating-
+point operation that was executed:
+
+o Emulator indicates that the numeric processor is being emulated. If there
+  were a numeric processor, 8087, 80287, 80387, or 80486 would appear instead.
+
+o The IPTR shows the 20-bit physical address from which the last floating-
+  point instruction was fetched.
+
+o The OPCODE shows the instruction type that was fetched.
+
+o The OPTR shows the 16-bit or 20-bit physical address of the memory address
+  that the instruction referenced, if any.
+
+
+The Register pane
+-----------------
+
+    The 80-bit floating-point registers
+    -----------------------------------
+
+    The Register pane shows each of the floating-point registers, ST(0) to
+    ST(7), along with its status (valid/zero/special/empty). The contents
+    are shown as an 80-bit floating-point number.
+
+    If you've zoomed the Numeric Processor window (by pressing F5) or made
+    it wider by using Window|Size/Move, you'll also see the floating-point
+    registers displayed as raw hex bytes.
+
+
+    The Register pane's local menu
+    ------------------------------
+    ___________
+   | Zero      |
+   | Empty     |
+   | Change... |
+   |___________|
+
+    To bring up the Register pane local menu, press Alt-F10, or use the Ctrl
+    key with the first letter of the desired command to directly access the
+    command.
+
+    Zero
+    ----
+    Sets the value of the currently highlighted register to zero.
+
+    Empty
+    -----
+    Sets the value of the currently highlighted register to empty. This is a
+    special status that indicates that the register no longer contains valid
+    data.
+
+    Change
+    ------
+    Loads a new value into the currently highlighted register. You are
+    prompted for the value to load. You can enter an integer or floating-
+    point value, using the current language's expression parser. The value
+    you enter is automatically converted to the 80-bit temporary real format
+    used by the numeric coprocessor.
+
+    You can also invoke this command by simply starting to type the new value
+    for the floating-point register. A dialog box appears, exactly as if you
+    had specified the Change command.
+
+
+The Control pane
+----------------
+
+    The control bits
+    ----------------
+
+    The following table lists the different control flags and how they
+    appear in the Control pane:
+_________________________________________
+
+   Name in pane         Flag description__
+
+      im                Invalid operation mask
+      dm                Denormalized operand mask
+      zm                Zero divide mask
+      om                Overflow mask
+      um                Underflow mask
+      pm                Precision mask
+      iem               Interrupt enable mask (8087 only)
+      pc                Precision control
+      rc                Rounding control
+      ic                Infinity control__
+
+
+    The Control pane's local menu
+    -----------------------------
+       ________
+      | Toggle |
+      |________|
+
+    Press Tab to go to the Control pane, then press Alt-F10 to pop up the
+    local menu. (Alternatively, you can use the Ctrl key with the first letter
+    of the desired command to access it.)
+
+    Toggle
+    ------
+    Cycles through the values that the currently highlighted control flag
+    can be set to. Most flags can only be set or cleared (0 or 1), so this
+    command just toggles the flag to the other value. Some other flags have
+    more than two values; for those flags, this command increments the flag
+    value until the maximum value is reached, and then sets it back to zero.
+
+    You can also toggle the control flag values by highlighting them and
+    pressing Enter.
+
+
+The Status pane
+---------------
+
+    The status bits
+    ---------------
+
+    The following table lists the different status flags and how they appear
+    in the Status pane:
+____________________________________
+
+   Name in pane         Flag description__
+
+      ie                Invalid operation
+      de                Denormalized operand
+      ze                Zero divide
+      oe                Overflow
+      ue                Underflow
+      pe                Precision
+      ir                Interrupt request
+      cc                Condition code
+      st                Stack top pointer_
+
+
+    The Status pane's local menu
+    ----------------------------
+       ________
+      | Toggle |
+      |________|
+
+    Press Tab to move to the Statuspane, then press Alt-F10 to pop up the
+    local menu. (You can also use the Ctrl key with the first letter of the
+    desired command to access the command directly.)
+
+
+    Toggle
+    ------
+    Cycles through the values that the currently highlighted status flag
+    can be set to. Most flags can only be set or cleared (0 or 1), so this
+    command just toggles the flag to the other value. Some other flags have
+    more than two values; for those flags, this command increments the
+    flag value until the maximum value is reached, and then sets it back to
+    zero.
+
+    You can also toggle the status flag values by highlighting them and
+    pressing Enter.
+
+/***************************** END OF FILE *******************************/
+

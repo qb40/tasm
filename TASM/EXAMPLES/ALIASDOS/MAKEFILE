@@ -1,0 +1,33 @@
+#  Makefile for aliasdos example.
+#
+#  Copyright (c) 1996 by Borland International, Inc.
+#
+#  Usage:   make -B         # aliasdos example
+#           make -B -DDEBUG # aliasdos example with debug info
+#
+
+!if $d(DEBUG)
+BCCDEBUG=-v
+ASMDEBUG=/zi
+!else
+BCCDEBUG=
+ASMDEBUG=
+!endif
+
+!if $d(MAKEDIR)
+THEINCLUDE=-I$(MAKEDIR)\..\include -L$(MAKEDIR)\..\lib
+!else
+THEINCLUDE=
+!endif
+
+alias1: library.lib
+        BCC $(BCCDEBUG) $(THEINCLUDE) olduser.c   library.lib
+        BCC $(BCCDEBUG) $(THEINCLUDE) newuser.c   library.lib
+        BCC $(BCCDEBUG) $(THEINCLUDE) cppuser.cpp library.lib
+
+library.lib: library.c alias.asm
+        BCC -c $(BCCDEBUG) $(THEINCLUDE) library.c
+        TASM /ml $(ASMDEBUG) alias.asm
+        if exist library.lib del library.lib
+        tlib library.lib +library +alias
+

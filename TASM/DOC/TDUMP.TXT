@@ -1,0 +1,1529 @@
+/*********************************************************************/
+                        TDUMP.EXE Utility Program
+
+This file contains information on:
+
+1.  TDUMP: The file inspecting utility
+2.  Understanding "Undefined Symbol" Error Messages
+3.  Resolving Undefined Symbol linker messages
+4.  Borland Open Architecture: Name Mangling
+
+
+===================================================================
+1.  TDUMP: The file inspecting utility
+===================================================================
+TDUMP.EXE is a utility that you use to examine the structure and
+contents of files.
+
+TDUMP organizes the output display according to the extension of the
+file you're dumping. If the file extension is recognizable, TDUMP
+displays the file's components according to the file type. TDUMP
+recognizes many file extensions, including .EXE, .OBJ, and .LIB files.
+If TDUMP doesn't recognize an extension, it produces a hexadecimal dump
+of the file. You can control the output format by using command-line
+options when you start the TDUMP (these command-line options are
+described later).
+
+
+TDUMP syntax
+------------
+The syntax for TDUMP is:
+
+  TDUMP [<options>] <Inputfile> [<Listfile>] [<options>]
+
+  o  <options> stands for any of the TDUMP options discussed in the
+     next section. For a list of the available command-line options,
+     type TDUMP, then press <Enter> at the DOS prompt.
+
+  o  <Inputfile> is the file whose structure you want to display (or
+     "dump").
+
+  o  <Listfile> is an optional output file name. Note that you can
+     also use the standard DOS redirection command ">" to create an
+     output file.
+
+
+TDUMP command-line options
+--------------------------
+You can use several option switches at a time with TDUMP. Because you can start
+each option with either a hyphen or a forward slash, the following two commands
+are equivalent:
+
+  TDUMP -el -v demo.exe
+
+  TDUMP /el /v demo.exe
+
+
+The -a and -a7 options
+- - - - - - - - - - - -
+TDUMP automatically adjusts its output display according to the file extension
+type. However, you can force an ASCII file display using either the -a or -a7
+options:
+
+  o  -a  produces an ASCII file display that shows the offset and the
+     contents using the displayable ASCII characters. TDUMP displays
+     non-displayable characters (like control characters) as a period.
+
+  o  -a7 converts high-ASCII characters to their low-ASCII
+     equivalents. This is useful if the file you are dumping sets
+     high-ASCII characters as flags (WordStar files do this).
+
+
+The -b# option
+- - - - - - - -
+The -b# option allows you to display information beginning at a specified offset.
+For example, if you wanted a dump of MYFILE starting from offset 100, you would
+use the following command:
+
+  TDUMP -b100 MYFILE
+
+
+The -d option
+ - - - - - - -
+The -d option causes TDUMP to dump any Borland 32-bit debug information found in
+the .OBJ file. If you do not specify this option, TDUMP displays raw data only.
+
+
+The -e, -el, -er and -ex options
+- - - - - - - - - - - - - - - - -
+All four options force TDUMP to display the file as an executable (.EXE) file.
+
+An .EXE file display consists of information contained within a file that is used
+by the operating system when loading a file. If symbolic debugging information is
+present (Turbo Debugger or MicrosoftCodeView), TDUMP displays it.
+
+TDUMP displays information for DOS executable files, NEW style executable files
+(Microsoft Windows and OS/2 .EXEs and DLLs), and Linear Executable files.
+
+  o  -el suppresses line numbers in the display.
+
+  o  -er suppresses the display of the relocation table.
+
+  o  -ex prevents the display of New style executable information.
+     This means TDUMP will only display information for the DOS
+     "stub" program.
+
+
+The -h option
+- - - - - - - -
+The -h option displays the dump file in hexadecimal (hex) format. Hex format
+consists of a column of offset numbers, 16 columns of hex numbers, and their ASCII
+equivalents (a period appears where no displayable ASCII character occurs).
+
+If TDUMP doesn't recognize the input file's extension, it displays the file in hex
+format (unless an option is used to indicate another format).
+
+
+The -l and -li options
+- - - - - - - - - - - -
+The -l option displays the output file in library (.LIB) file format. A library
+file is a collection of object files (see the -o option for more on object files).
+The library file dump displays library-specific information, object files, and
+records in the object file.
+
+The -li option tells TDUMP to display a short form of "impdef" records when
+dumping import libraries. You can also specify a search string using the following
+syntax:
+	-li=<string>
+
+For example, the command
+	TDUMP -li=codeptr import.lib
+results in the following output:
+	Impdef:(ord) KERNAL.0336=ISBADCODEPTR
+This output shows that the function is exported by ordinal, whose ordinal value is
+336 (decimal). In addition, the output displays the module and function name.
+
+If you give the command
+	TDUMP -li=walk import32.lib
+TDUMP displays:
+	Impdef:(name) KERNEL32.????=HEAPWALK
+This shows the output of a function exported by name.
+
+
+The -m option
+- - - - - - -
+The -m option leaves C++ names occurring in object files, executable files, and
+Turbo Debugger symbolic information files in "mangled" format. This option is
+helpful in determining how the C++ compiler "mangles" a given function name and
+its arguments.
+
+
+The -o, -oc, -oi, and -ox options
+---------------------------------
+The -o option displays the file as an object (.OBJ) file. An object file display
+contains descriptions of the command records that pass commands and data to the
+linker, telling it how to create an .EXE file.
+
+The display format shows each record and its associated data on a record-by-record
+basis.
+
+  o  -oc causes TDUMP to perform a cyclic redundancy test (CRC) on
+     each record encountered. The display differs from the -o display
+     only if an erroneous CRC check is encountered (the TDUMP CRC
+     value differs from the record's CRC byte).
+
+  o  -oi<id> includes only specified record types in the object module
+     dump. Replace <id> with the name of the record to be displayed.
+     For instance,
+
+        TDUMP -oiPUBDEF MYMODULE.OBJ
+
+     produces an object module display for MYMODULE.OBJ that displays
+     only the PUBDEF records.
+
+  o  -ox<id> excludes designated record types from the object module
+     dump. Replace <id> with the record name not to be displayed. For
+     instance,
+
+        TDUMP -oxPUBDEF MYMODULE.OBJ
+
+     produces an object module display for MYMODULE.OBJ that excludes
+     the PUBDEF records.
+
+  o  The -ox and -oi options are helpful in finding errors that occur
+     during linking. By examining the spelling and case of EXTDEF and
+     PUBDEF symbols, you can resolve many linking problems. For
+     instance, if you receive an "unresolved external" message from
+     the linker, use "TDUMP -oiEXTDEF" to display the external
+     definitions occurring in the module causing the error. Then, use
+     "TDUMP -oiPUBDEF" on the module containing the public symbol
+     which the linker could not match.
+
+Another use for the -oi switch is to check the names and sizes of the segments
+generated in a particular module. For instance,
+
+  TDUMP -oiSEGDEF MYMODULE.OBJ
+
+displays the names, attributes, and sizes of all of the segments in MYMODULE.
+
+Note: To get a list of record types for -0i and -ox, use the command-line
+      options -oi? and -ox?.
+
+
+The -R option
+- - - - - - -
+The -R option causes TDUMP to dump relocation tables from 32-bit PE (Win32) format
+images. The default is to suppress these dumps.
+
+
+The -v option
+- - - - - - -
+The -v option is used to create a verbose display. If you use -v with an .OBJ or
+.LIB file, TDUMP produces a hexadecimal dump of the record's contents without any
+comments about the records.
+
+If you use TDUMP on a Turbo Debugger symbol table, it displays the information
+tables in the order in which it encounters them. TDUMP doesn't combine information
+from several tables to give a more meaningful display on a per-module basis.
+
+
+===================================================================
+2.  Understanding "Undefined Symbol" Error Messages
+===================================================================
+One of the most common error messages seen by developers using a C or
+C++ compiler is "undefined symbol." This document provides a general
+description of what causes undefined symbol error messages, as well as
+instructions on solving specific undefined symbol errors.
+
+The following error message are treated in order:
+  UNDEFINED SYMBOL AT COMPILE TIME
+  UNDEFINED SYMBOL AT LINK TIME
+  OTHER UNDEFINED SYMBOL ERRORS
+  o  UNDEFINED SYMBOL WHEN LINKING A BORLAND EXAMPLE
+  o  UNDEFINED SYMBOL WHEN TLINKING FROM DOS COMMAND LINE
+  o  UNDEFINED SYMBOL LINKING C/C++ AND ASSEMBLY MODULES
+  o  UNDEFINED SYMBOL LINKING C++ WITH C OR ASSEMBLY MODULES
+  o  UNDEFINED SYMBOL: '_main' IN MODULE C0.ASM
+  o  UNDEFINED SYMBOL LINKING A DLL
+  o  UNDEFINED SYMBOL: A PSEUDO REGISTER (ie. _AX)
+  o  UNDEFINED SYMBOL: 'FIWRQQ'
+  o  UNDEFINED SYMBOL: AN IOSTREAM CLASS MEMBER
+  o  UNDEFINED SYMBOL: 'abort()'
+  o  UNDEFINED SYMBOL: '_exitclean()'
+  o  UNDEFINED SYMBOL: LLSH or SCOPY or FMUL or FDIV
+  o  UNDEFINED SYMBOL: STATIC POINTER TO A CLASS MEMBER FUNCTION
+  o  UNDEFINED SYMBOL: '_WSPRINTF'
+  o  UNDEFINED SYMBOL: 'fidrqq'
+  o  UNDEFINED SYMBOL IN WINDOWS.H
+  o  UNDEFINED SYMBOL USING TCLASDLL.LIB
+  o  UNDEFINED SYMBOL USING SELECTORS PROVIDED BY WINDOWS
+  o  UNDEFINED SYMBOL: 'ChangeSelector'
+  o  UNDEFINED SYMBOLS USING THE OBJECTWINDOWS LIBRARY (OWL)
+  o  UNDEFINED SYMBOL: 'Object::new(unsigned int)'
+  GETTING A CLOSER LOOK
+  o  USING TDUMP TO RESOLVE UNDEFINED SYMBOLS
+  o  USING IMPDEF TO RESOLVE UNDEFINED SYMBOLS IN A DLL
+
+
+UNDEFINED SYMBOL AT COMPILE TIME
+--------------------------------
+An undefined symbol at compile time indicates that the named
+identifier was used in the named source file, but had no definition in
+the source file. This is usually caused by a misspelled identifier
+name, or missing declaration of the identifier used.
+
+EXAMPLE 1:
+    int main(void)
+    {
+        test = 1;
+        return 0;
+    }
+
+The code shown in Example 1 generates an undefined symbol error if the
+variable "test" was not declared in either an included header file or
+in the actual source file itself.
+
+EXAMPLE 2:
+    int main(void)
+    {
+        int test;
+        Test = 1;
+        return 0;
+    }
+
+The code shown in Example 2 causes an undefined symbol error message
+to be displayed because the variable "Test" was not spelled as it was
+declared. Remember that C and C++ are case-sensitive languages.
+
+
+UNDEFINED SYMBOL AT LINK TIME
+-----------------------------
+When linking multi-file projects, the linker must resolve all
+references to functions and global variables shared between modules.
+When these references cannot be resolved, the linker generates
+an "undefined symbol" error message. This means that after searching
+all of the object files and libraries which are included in the link,
+the linker was unable to find a declaration for an identifier you
+used. This can be caused by:
+
+  o  Forgetting to include a needed object module or library in
+     your link (project file, response file, or command line).
+
+  o  Misspelling the name of the undefined symbol either where it
+     was used or where it was declared.
+
+  o  Accidentally declaring a global variable as "extern."
+
+  o  Forgetting to use extern "C" to disable name mangling when you're
+     mixing C++ with C or Assembly modules. See the specific entry on
+     this subject elsewhere in this document or consult the
+     HELPME!.DOC file included with the product.
+
+  o  Turning OFF Generate Underbars in one of the modules you're
+     linking.
+
+If all else fails, use TDUMP to dump both object modules and note any
+difference between the symbols used. This will usually give enough
+insight to resolve the problem. For more information on using TDUMP to
+resolve undefined symbol errors, see the "Getting a Closer
+Look "section in this document.
+
+
+OTHER UNDEFINED SYMBOL ERRORS
+------------------------------
+The following list provides solutions to some of the more common
+causes of undefined symbol errors:
+
+  o  UNDEFINED SYMBOL WHEN LINKING A BORLAND EXAMPLE
+     Almost all of Borland's examples come with project files. You
+     must use the project file when building the example to ensure
+     that all necessary modules are linked and all the necessary
+     settings are defined.
+
+  o  UNDEFINED SYMBOL WHEN TLINKING FROM DOS COMMAND LINE
+     The TLINK command line must have the libraries in the following
+     order ( GRAPHICS.LIB + <user libs> + EMU.LIB + MATH (S,T,C,M,L -
+     for model) + C (S,T,C,M,L - for model)
+
+  o  UNDEFINED SYMBOL LINKING C/C++ AND ASSEMBLY MODULES
+     There are several sources of undefined symbol errors when trying
+     to link assembly with C or C++ modules:
+
+       o  Turbo Assembler generates all upper-case symbols unless you
+          specify /ml or /mx on the assembly command line. Since C
+          modules are, by default, case sensitive, failing to do this
+          will result in undefined symbols for all symbols that are
+          not completely upper case in the C module(s).
+
+       o  The symbols in the assembly file being referenced from a C
+          module must be declared using a PUBLIC directive. TLINK does
+          not consider symbols which are not declared PUBLIC when it
+          attempts to resolve an undefined symbol.
+
+       o  All symbols in the assembly module that are referenced in
+          the C module must be prototyped/declared as extern in the C
+          module -- the compiler generates undefined symbol errors for
+          all symbols not declared in this manner. In addition, all
+          symbols in the assembly module that are referenced from a C
+          module must have an underscore prefix. This naming
+          convention must be used in the assembly module. You can
+          either do this explicitly (_symbol) or you can use:
+
+            .model <memory model used>, C
+
+          to specify this implicitly for all symbols.
+
+          IMPORTANT NOTE: If you put underscores in front of your
+          assembly routines and also use the .model (memory model)
+          C directive, the public symbol will be generated with two
+          underscores; consequently an undefined symbol error is
+          generated.
+
+          If all else fails, TDUMP both object modules and note any
+          difference between symbols. This will usually give enough
+          insight to resolve the problem. For more information on
+          using TDUMP to resolve undefined symbol errors see the
+          "Getting a Closer Look" section in this document.
+
+  o  UNDEFINED SYMBOL LINKING C++ WITH C OR ASSEMBLY MODULES
+     C++ is a strongly typed language. In order to support type-safe
+     linkage (as well as function overloading), Borland C++ must
+     attach information to the symbols generated for function names
+     and variables. When this is done, the symbol will no longer match
+     the standard C style function name. In order to link correctly
+     with C or assembly modules, the compiler must be notified that
+     the symbol is to be in the standard C style (non-encoded) rather
+     than employing C++ name-mangling (encoded). This is done by
+     prototyping the function as type extern "C". Here is a quick
+     example:
+
+       extern "C" int normal_c_func( float, int, char );
+
+     For an additional example, you may want to look at the header
+     files which came with the product. One such header file is
+     stdio.h.
+
+  o  UNDEFINED SYMBOL: '_main' IN MODULE C0.ASM
+     Every DOS C program must contain a function called main(). This
+     is the first function executed in your program. The function name
+     must be all in lower case. If your program does not have one,
+     create one. If you are using multiple source files, the file that
+     contains the function main() must be one of the files listed in
+     the project.
+
+     Note that an underscore character '_' is prepended to all
+     external Borland C++ symbols.
+
+     In addition to an absent, misspelled or mis-cased symbol main,
+     there are two additional common causes:
+
+       o  The "generate underbars" option is disabled.
+
+       o  The Pascal calling Convention rather than the C calling
+          convention is selected.
+
+
+  o  UNDEFINED SYMBOL LINKING A DLL
+     It is relatively simple to link a DLL to your source:
+
+       1)  Create a .LIB from the .DLL using Borland's implib utility.
+
+       2)  Include the .LIB in your project if you're using the IDE or
+           in your TLINK command if you're using the command-line
+           compiler or linker.
+
+       3)  Turn case sensitive link ON.
+
+       4)  Turn case sensitive exports ON.
+
+     The issues of linking C++ with C, assembly, or any other language
+     still apply. See the sections on linking C++, C, and assembly in
+     this document.
+
+     If the link still fails, the techniques in the section "Getting A
+     Closer Look" should help you resolve the problem.
+
+  o  UNDEFINED SYMBOL: A PSEUDO REGISTER (i.e. _AX)
+     Pseudo registers are only allowed in the Borland C++ and ANSI
+     modes of the compiler. You can change this setting in the
+     Options | Compiler | Source menu.
+
+  o  UNDEFINED SYMBOL: 'FIWRQQ'
+     Your program uses floating point routines directly (or
+     indirectly) and you have NONE selected for floating point. Or,
+     you are using TLINK and have forgotten to include EMU.LIB or
+     FP87.LIB on the command line.
+
+  o  UNDEFINED SYMBOL: AN IOSTREAM CLASS MEMBER
+     If you are using the Integrated Development Environment, simply
+     turn off Options | Compiler | Code Generation | Unsigned
+     Characters.
+
+     If you are using the command-line compiler, simply remove the
+     '-K' option.
+
+  o  UNDEFINED SYMBOL: 'abort()'
+     The sole purpose of abort is to print the error message
+
+       "Abnormal Program Termination"
+
+     and exit the program with an error code of 3. This function is
+     located in the startup code C0.ASM. Linker errors indicating that
+     abort() is an undefined symbol are only possible if the standard
+     startup code is not being linked into a project. Although this is
+     not a common C/C++ development practice, it is to be expected
+     when linking in code written other languages such Microsoft
+     Fortran, Clipper, or in cases where embedded systems are being
+     developed. To resolve the undefined symbol, extract the abort()
+     function from the startup code and make a separate object out of
+     it to be linked into the project.
+
+  o  UNDEFINED SYMBOL: '_exitclean()'
+     There is a function called _exitclean which is new to Turbo C++.
+     Users moving from Turbo C 2.0 to Turbo C++ may encounter
+     _exitclean() as an undefined symbol at link time. _exitclean() is
+     defined in the Turbo C++ startup code. Users creating embedded
+     system (ROMable code), who do not use the standard Turbo C++
+     startup code, are likely to encounter _exitclean() as an
+     undefined symbol. These users can strip the function from the
+     C0.ASM file and create a separate .OBJ file which can be linked.
+     Another option would be to purchase the Borland C++ RTL source and make
+     the necessary adjustments.
+
+  o  UNDEFINED SYMBOL: LLSH or SCOPY or FMUL or FDIV
+     The helper functions have changed their names from Turbo C 2.0 to
+     Turbo C++. This can lead to many undefined symbol issues.
+
+     When LLSH or SCOPY or FMUL or FDIV (note no underscores here)
+     appear as undefined symbols at link time, it is likely that an
+     object module or library has code generated a call to some helper
+     function from the Turbo C 2.0 libraries. The solution is to
+     simply recompile all objects from source. You can do this by
+     choosing Compile | BuildAll from the menu in the IDE.
+
+  o  UNDEFINED SYMBOL: STATIC POINTER TO A CLASS MEMBER FUNCTION
+     Any static member of a class must be initialized--if not that
+     static member generates an undefined symbol error. The following
+     is an example of how to initialize a static pointer to class
+     member function of a class is initialized:
+
+     // When testing static member initialization, you must
+     // declare an instance of the class in a main function;
+     // otherwise, the linker has no reference which it must
+     // try to resolve, and the undefined symbol error will
+     // not be seen - thus you won't know that your
+     // initialization was in error.
+
+     #include <iostream.h>
+
+     // used to allow global initialization of static member pointer
+     typedef void (*fptr)();
+
+     // declare class containing static members
+     class First
+     {
+       public:
+          static fptr statptr;
+     };
+
+     // initialize static members of class First
+     fptr First::statptr = NULL;
+
+     int main(void) {
+          First fVar;
+
+          if (fVar.statptr == NULL)
+               cout << "fVar.statptr is NULL: " <<
+               fVar.statptr << endl;
+
+          return 0;
+     } // end of main()
+
+  o  UNDEFINED SYMBOL: '_WSPRINTF'
+     Turn off the "Case-sensitive exports" and "Case-sensitive link"
+     options. If you are using the command linker, don't use the /c
+     switch. If you are invoking the linker from the BCC(x) command
+     line, use the -lc- switch. If you are using the IDE, go to the
+     linker options dialog box and turn off the case sensitivity
+     switch.
+
+  o  UNDEFINED SYMBOL: 'fidrqq'
+     You will get an undefined symbol fidrqq when using the Integrated
+     Development Environment if you have the Options | Compiler | Code
+     Generation | More | Floating Point Option set to NONE and you are
+     using floating point arithmetic in your program. In order to best
+     solve this problem you must set the IDE option for Floating Point
+     to either the emulation choice or to the 80x87 choice. Note that
+     if you choose an 80x87 setting the application generated by the
+     compiler will require an 80x87 chip to be present at run-time.
+     Use this setting only when truly appropriate.
+
+  o  UNDEFINED SYMBOL IN WINDOWS.H
+     Make sure you are using the windows.h file that came with Borland
+     C++, NOT the windows.h that came with the Microsoft Windows SDK.
+     If you include the Microsoft windows.h file you will get many
+     undefined symbols including WINMAIN in caps and translatemessage
+     in lower case. Use our windows.h file instead of Microsoft's when
+     you are using our compiler.
+
+  o  UNDEFINED SYMBOL USING TCLASDLL.LIB
+     To use the DLL version of the container class library you must do
+     ALL of the following:
+
+       o  Use the large memory model
+
+       o  Use Smart Callbacks
+
+       o  Turn case sensitive link ON
+
+       o  Turn case sensitive exports ON
+
+       o  Use the DLL version of the RTL
+
+       o  Define _CLASSDLL
+
+  o  UNDEFINED SYMBOL USING SELECTORS PROVIDED BY WINDOWS
+     If you are using _C000h or other selectors provided by Windows
+     and they are coming up as undefined symbols, perhaps you are
+     compiling in C++ mode and forgot to extern "C" them.
+
+     Programming in C:
+       extern WORD _C000h
+
+     Programming in C++:
+       extern "C" WORD _C000h
+
+  o  UNDEFINED SYMBOL: 'ChangeSelector'
+     The Windows API function ChangeSelector() has the wrong name in
+     KERNEL.EXE for Windows 3.0, and therefore in IMPORT.LIB. The name
+     given to this function (and this is NOT a joke) is 
+     PrestoChangoSelector().
+
+     Use PrestoChangoSelector() in your program in place of
+     ChangeSelector() and all will be well.
+
+  o  UNDEFINED SYMBOLS USING THE OBJECTWINDOWS LIBRARY (OWL)
+     If you get any of the following the undefined symbols:
+
+       TApplication(unsigned char far *, unsigned int, unsigned int,
+           unsigned char far *, int )
+
+       and
+
+       TWindow::TWindow(TWindowsObject near *, unsigned char far *,
+           TModule near *)
+
+       and are using the DLL versions of OWL and the Class Library,
+       you must define _CLASSDLL in Options | Compiler | Code
+       Generation | defines combo box.
+
+       It could be because you have forced unsigned characters. The
+       functions in the .lib take signed characters and thus if you
+       compile to use unsigned characters, the symbols will not match.
+
+       Using the Integrated Development Environment be sure to turn
+       off Options | Compiler | Code Generation | Unsigned Characters.
+
+       If you are using the command line compiler be sure to remove
+       the -K option to solve this problem.
+
+  o  UNDEFINED SYMBOL: 'Object::new(unsigned int)'
+     You forgot to link with the TCLASDLL.LIB file where it is
+     defined!
+
+     Basically the problem is that you are mixing both STATIC and
+     DYNAMIC LINK libraries into the application. You must use only
+     one or the other. If you are working in the IDE, change the
+     LINKER options section for libraries.
+
+     If you are using the dynamic link library, remember to set
+     _CLASSDLL and Build All.
+
+     If you are using the command line compiler and linker, just be
+     sure to specify the correct set of library files. For specific
+     information on the "correct set of library files" please see the
+     documentation included with the product as library names tend to
+     change from version to version.
+
+
+GETTING A CLOSER LOOK
+---------------------
+Borland provides tools that you can use to determine exactly what the
+linker is seeing when it is trying to match symbols: TDUMP and IMPDEF.
+This section provides some simple techniques for using these utilities
+to resolve undefined symbol errors.
+
+  o  USING TDUMP TO RESOLVE UNDEFINED SYMBOLS
+     TDUMP can be used to list the symbols in a .OBJ or a static .LIB
+     that the linker is having trouble matching.
+
+     First, TDUMP the module that is trying to reference the symbol.
+     For example, if main.cpp is trying to access a function, myfunc()
+     in myfuncs.cpp and is getting "Undefined symbol myfunc() in
+     module main.cpp",
+
+         tdump -m -oiEXTDEF main.obj > main.ext
+
+     Then, TDUMP the module in which the symbol is defined.
+
+         tdump -m -oiPUBDEF myfuncs.obj > myfunc.pub
+
+     Using a text editor find the symbol associated with the error in
+     each file. If they are not the same, then you have verified that
+     the linker is correct in generating the error. You must check
+     your code and verify that the compiler is seeing the same
+     declaration for the symbol when each module is being compiled.
+
+     You can use TDUMP to look at a static .LIB file the same way you
+     look at an .OBJ. file.
+
+         tdump -m -oiPUBDEF mystatic.lib > mystatic.pub
+
+     To use TDUMP with an implib,
+
+         tdump -m -oiTHEADR mydll.lib > mydll.pub
+
+     You can also use IMPDEF to view the symbols exported by a DLL.
+
+
+  o  USING IMPDEF TO RESOLVE UNDEFINED SYMBOLS IN A DLL
+     If you are trying to link a Borland generated DLL with another
+     language or product and are getting undefined symbol errors, you
+     should verify that the names or the ordinals that are being
+     exported by the DLL are the same as your application expects.
+
+     This can be done by generating a .DEF file with the utility
+     IMPDEF. For example, to create a .DEF file for MY.DLL,
+
+        impdef my.def my.dll
+
+     The .DEF file will have the exported symbol name and its ordinal
+     number. Remember that C++ mangles names. Your application must
+     expect the mangled symbol name to call the function in the DLL
+     properly. This can be a problem if the application automatically
+     uppercases the symbol name before trying to call the function. If
+     this is so, you must change the declaration of the function and
+     re-build your DLL.
+
+
+===================================================================
+3.  Resolving Undefined Symbol linker messages
+===================================================================
+This section provides an overview of the Linking process and helps to
+identify causes of 'unresolved external symbols'.
+
+The code for printf() is in a module in the run time library. When you
+call printf() in a C/C++ module, the compiler creates a record
+(referred to as EXTDEF - EXTernal DEFinition) that indicates the call
+to an external function. The linker then looks at that OBJ, along with
+all the other modules and libraries specified and attempts to find
+another module (.OBJ or .LIB) which defines/provides the
+symbolprintf().
+
+If the linker cannot resolve the call to printf(), the linker
+generates an error indicating that printf() is an undefined symbol.
+The error message, however, is very often not the result of leaving
+out the module containing the symbol being looked for, but rather a
+discrepancy between the name used by the caller (the C/C++ module
+calling printf() in the case mentioned above) and the supplier (the
+LIBRARY containing the code to printf() ).
+
+The *real* name of any symbol is almost always different from the
+name/identifier used by the programmer. For example, the *real* name
+(by *real* name we mean the identifier used/generated by the tools) of
+strcpy() is: '_strcpy()'. The *real* name of a symbol depends on the
+various settings and options. The relevant settings are list below:
+
+  Calling Conventions:
+        > cdecl
+        > pascal
+        > fastcall
+
+  Compiler Settings:
+        > generate underbars
+        > unsigned chars    ( C++ only )
+
+  Optimizations:
+        > Object Data Calling   ( C++ only )
+
+  Virtual Table:
+        > Far Virtual Tables
+
+  Language used:
+        > C
+        > C++
+        > Assembly
+
+Furthermore there are two options which affect how the linker attempts
+to match symbols:
+
+        > Case sensitive link
+        > Case sensitive exports ( Windows only )
+
+The following is a discussion of how the above mentioned options
+affect the *real* name of symbols, hence the resolution of symbols.
+
+
+Calling Conventions
+-------------------
+Borland and Turbo C++ both allow you to specify the default calling
+convention. This default can be overridden by using the
+'pascal', '_fastcall' or 'cdecl' keywords. Whether set globally or on
+individual function instances, the calling convention affects the name
+of functions. By default, when the compiler encounters a function
+declared as,
+
+    int Foo( int );    // or: int cdecl Foo( int );
+
+the name generated is _Foo; that is, the resulting name has the same
+case but is preceded with a leading underscore. The generation of the
+underscore is the default behavior and is necessary when you link to
+the run time libraries. There is no 'printf()' symbol in the RTL
+(!),but there is a '_printf()'.
+
+While the C calling convention implies 'Case Sensitivity' and
+'Generation of Underbars', Borland/Turbo C++ provides separate
+settings for the generation of underbars and the calling convention
+Generation of Underbars can be controlled from the Options | Compiler|
+Advanced Code Generation Dialog, or the -u option from the command
+line ( -u- would turn it off, it is on by default). The 'Calling
+Convention' can be modified via the Options | Compiler |
+Entry/ExitCode Dialog.
+
+If our function 'Foo' is declared with the pascal modifier, for
+example:
+
+    int pascal Foo( int );
+
+(or if the default 'Calling Convention' is set to 'PASCAL') the
+resulting name will be FOO--that is, all upper-case with no
+underscore. The '_fastcall' modifier is similar to 'cdecl' in regards
+to Case Sensitivity but the underscore character is replaced with '@'.
+Hence:
+
+    int _fastcall Foo( int );
+
+will result in the '@Foo' symbol.
+
+Therefore, mismatching the calling conventions might result in
+'Undefined Symbols.' Watch for clues in the undefined symbol name
+provided in the Linker error messages (look at the Case Sensitivity
+and any leading characters) to spot cases of incorrect settings in the
+'Calling Convention' and/or 'Generation of Underbars'.
+
+
+NAME MANGLING:
+--------------
+The C++ language uses yet another naming convention as part of its
+implementation of 'type safe linkage.' Imagine a function myfunc()
+which take two longs [void myfunc( long, long );]. What if someone has
+it incorrectly prototyped in a calling module as taking two floats,
+for example void myfunc( float, float );. The results of such a call
+will be unpredictable. When using the C language, the linker would
+resolve such a call since the symbol the compiler uses to call the
+function taking two floats will be '_myfunc()', and the name the
+compiler used in the module which implements the function taking two
+longs is also '_myfunc()'.
+
+In C++, however, the name the compiler generates for a function is a
+'mangled' name: it is 'encrypted' based on the parameters types the
+function expects. In the scenario described in the prior paragraph, the
+call to myfunc() will not be resolved since the compiler generates
+different names for 'void myfunc( float, float )' and 'void myfunc(
+long, long )'.
+
+Because a C++ function's mangled real name depends on the types of its
+parameters, if unsigned chars is used as a compiler option, it changes
+the name of functions declared to take a char, or char *. Unsigned
+chars is off by default, it is turned on under the Options |Compiler |
+Code generation menu. Or by specifying the -K option with the command
+line compiler. Watch out for potential 'Undefined Symbol' messages
+caused by a mismatched of char vs. unsigned char.
+
+The 'virtual mechanism' of C++ is implemented via a table commonly
+referred to as the Virtual Table or the VMT (Virtual Method Table).
+Various settings of the Compiler dictate whether the Table ends up in
+the Default Data Segment or in a Far Segment (namely Memory
+Model, '_export' and 'huge' class modifiers, Virtual Table Control
+Optionsetc). To further enforce 'type- safe-linkage', the
+Borland/Turbo C++ compilers include the 'distance' of the Virtual Table
+as part of its 'Name-Mangling' logic. This prevents the linker from
+resolving function calls which would crash at run-time because of
+mismatched 'Virtual Table Control' settings. In the same token,
+Borland provides the 'Object Data Calling convention' for improved
+efficiency of C++ code. Once again, the 'Name-mangling' algorithm also
+reflects the enabling of 'Object Data Calling'. This ensures that
+function calls involving mismatched 'Object Data Calling' convention
+between caller and callee will be caught at link time (instead of
+resulting in erratic run-time behavior).
+
+To illustrate the effect of 'Virtual Table Control' and 'Object
+DataCalling,' let's create a simple class and look at the effects of
+the various settings on the resulting names:
+
+class  Test
+{
+     public:
+         virtual int Process( void );
+};
+
+int main( void )
+{
+     Test t;
+     return t.Process();
+}
+
+The following table illustrates the effects of Compiler Settings on
+the *actual* name generated for the member function 'int
+Test::Process(void)'.
+
+     +----------------------------------------------------------+
+     | Object Call. | Far V. Tbl. | Huge Md. |  [ REAL  NAME ]  |
+     |--------------+-------------+-----------------------------+
+     |      No      |     No      |  No     > @Test@Process$qv  |
+     |--------------+-------------+-----------------------------+
+     |      No      |     Yes     |  No     > @Test@0Process$qv |
+     |--------------+-------------+-----------------------------+
+     |      Yes     |     No      |  No     > @Test@1Process$qv |
+     |--------------+-------------+-----------------------------+
+     |     Yes      |     No      |  Yes    > @Test@2Process$qv |
+     +--------------+-------------+-----------------------------+
+
+NOTE: Using the '_export' or 'huge' keyword when defining a class
+      results in Far Virtual Tables for the class.
+
+'Undefined Symbol Messages' caused by mismatching Virtual Table
+Controls or Object Data Calling conventions may be hard to identify; it
+is often useful to use TDUMP.EXE to find the actual names of the
+unresolved symbols (however, watch out of any '0', '1' or '2' following
+the '@ClassName@' portion of the real names).
+
+
+LANGUAGE USED
+-------------
+By default assemblers (including TASM) do not modify public
+names--they merely convert symbols to upper case. With TASM, the /mx
+option forces the assembler to treat public symbols with case
+sensitivity. Without /mx, a call to _myfunc from an assembly module
+looks like _MYFUNC to the linker (this causes undefined symbol errors
+when linking C and assembly).
+
+NOTE: TASM has an extension which causes the automatic generation of
+underscores. See. .MODEL <model>, Language directives in the TASM
+User's Guide.
+
+As previously mentioned in the section about 'Name Mangling,' the
+C++ language uses a different naming convention than does the C
+language. This can result in undefined symbols when calling C from C++
+(or vice-versa). C++ modules should use the 'extern "C"' syntax when
+interfacing with C modules (see the Name Mangling section of
+Programmer's Guide for the proper syntax).
+
+
+LINKER SETTINGS
+---------------
+By default, the linker treats _myfunc and _MYFUNC as different
+symbols. However, you can control whether the linker pays attention to
+Case Sensitivity via the Options | Linker | Settings dialog (IDE), or
+the /c option with TLINK (/c: Enables Case Sensitivity [default],
+/c-turns the option off).
+
+For example, if the option is disabled, a call to _myfunc could be
+resolved to _MYFUNC.
+
+When creating a Windows application, not only can you link to 'static'
+modules (.OBJs or .LIBs which are a collection of .OBJs), but you can
+also link to dynamic libraries where the resolution of the call is
+completed by Windows at load time. Functions residing in DLLs and
+called from an .EXE are said to be imported. Functions that are coded
+in an .EXE or .DLL, and are called by either Windows, .EXEs, or .DLLs
+are said to be exported.
+
+Functions are imported in two ways: by listing them in the IMPORTS
+section of the .DEF file, or by linking to an import library. Functions
+can be exported by two methods: by using the _export keyword in the
+source code or listing the functions in the EXPORTS section of the
+.DEF file.
+
+Suppose your application calls the symbol _myfunc which is in a
+DLL. The linker can treat symbols coming from an import library, or
+IMPORTS section of the .DEF file with or without case sensitivity,
+(determined by the setting of case sensitive exports under the Options
+| Linker | Settings Dialog or /C option on the TLINK command line). If
+this setting is NOT enabled, then the Linker treats symbols in import
+libs or IMPORTS sections as all uppercase. It then considers upper
+case symbols during the link phase. At that point it is doing normal
+linking using the setting of the case sensitive link option. If we are
+importing both _myfunc and _MYFUNC without the /C option, the linker
+can only resolve the call to _MYFUNC.
+
+If you are calling _myfunc (a cdecl function) and are performing a
+case sensitive link, but do not have case sensitivity on
+EXPORTS, _myfunc will show up as undefined.
+
+     > Imported cdecl functions and C++ names will link when /c
+     > and /C are both enabled, or neither are enabled.
+
+C++ names are always generated with lowercase letters. When importing
+or exporting C++ names, it's recommended that you use both the /c
+and/C options.
+
+Now let's apply the above to some common scenarios and provide
+possible diagnostics and suggestions:
+
+
+PROBLEM:
+     All the functions in a 3rd party library are undefined!
+
+SOLUTION:
+     3rd party libraries must be explicitly linked in. To explicitly
+     link to a 3rd party library from the IDE, open a project file and
+     insert the .LIB file into the project file. The project file also
+     needs to have all of your source code files listed in it. From
+     the command line, insert the .LIB on your command line to TLINK.
+
+
+PROBLEM:
+     All the functions in the RTL are undefined!
+
+SOLUTION:
+     You need to link in Cx.LIB, where x is the memory model. A
+     feature of the IDE in Turbo C++ and Borland C++ v2.x is that if
+     you put a .LIB in the project file which starts out as Cx where x
+     is a memory model, the new library overrides the normal run time
+     library, and the latter will not be linked in (for example, if
+     you're using a library named CSERVE.LIB). Rename any such
+     libraries, then the normal Cx.LIB will automatically be linked
+     in. (Borland C++ 4.x has a dialog for specifying which Run Time
+     Libraries should be linked in).
+
+
+PROBLEM:
+     When mixing C and C++ modules (.c and .cpp source) symbols are
+     undefined.
+
+SOLUTION:
+     Because of name mangling (see above) the symbol the linker sees
+     being called from a C++ module will not look like the symbol in
+     the Cmodule. To turn name mangling off when prototyping
+     functions:
+
+     // SOURCE.CPP
+
+     extern "C" {
+          int Cfunc1( void );
+          int Cfunc2( int  );
+     }
+
+NOTE:  You can also disable name-mangling for functions written in
+C++ and called from C.
+
+A C++ compile will happen if the source code has a .CPP extension, or
+Options | Compiler | C++ options use C++ compiler is set to always.
+
+
+PROBLEM:
+     randomize and other macros are coming up as undefined symbols.
+
+SOLUTION:
+     Turn keywords to Borland C++. Since some macros are not ANSI
+     compatible, the header files will not define them if compiled
+     with ANSI or UNIX keywords on.
+
+
+PROBLEM:
+     min and max are coming up undefined.
+
+SOLUTION:
+     These macros are only included in a C compile, and will not be
+     seen by the compiler if compiling in C++. In C, you must
+     #include <stdlib.h> to use them.
+
+
+PROBLEM:
+     I cannot get my assembly modules to link with my C/C++ program.
+
+SOLUTION:
+     For C++, see above. Otherwise, the .ASM must be assembled with
+     case sensitivity on public symbols (/mx for TASM). It must also
+     match the C naming convention, which will have an underscore in
+     front of the name. So given the following code in a C module,
+
+     int myfunc( void );
+
+you need to
+
+     call _myfunc
+
+     from the assembly module. (NOTE: TASM has extensions which will
+     automatically generate underscores for you). Also, make sure the
+     .OBJ which has the assembly code is listed in the project file,
+     or on the tlink line.
+
+
+PROBLEM:
+     wsprintf is coming up undefined.
+
+SOLUTION:
+     In Borland C++ 2.0, to use wsprintf when case sensitive exports
+     is on, you need to reverse a define in windows.h via the
+     following:
+
+     #ifdef   wsprintf
+     #undef   wsprintf
+
+     #define  wsprintf wsprintf
+     extern   "C" int FAR cdecl wsprintf( LPSTR, LPSTR, ... );
+     #endif
+
+     To call wsprintf (or any cdecl imported function ) with case
+     sensitive exports off, you need to match an upper case name. Thus
+     windows.h #defines wsprintf to be WSPRINTF. wsprintf is one of the
+     cdecl functions from windows, so the compiler will generate a
+     lower case symbol for when calling it.
+
+
+PROBLEM:
+     FIWRQQ and FIDRQQ are undefined
+
+SOLUTION:
+     These symbols are in the EMU or FP87 library. You must link it
+     in explicitly when using TLINK, or set the IDE to link it in under
+     the Options | Compiler | Advanced Code Generation Floating point
+     box.
+
+
+PROBLEM:
+     Warning attempt to export non-public symbol ...
+
+SOLUTION:
+     The exports section of the .DEF file has a symbol which does not
+     match one the compiler generated in the source code. This happens
+     if:
+
+  o  The source was compile in C++ (the symbol name is mangled).
+     Resolve by exporting with the _export keyword, compiling in C,
+     or by declaring the function as extern "C".
+
+  o  Case sensitive exports is ON, you are exporting a PASCAL
+     function, and exporting it like: WndProc. Resolve by
+     exporting as WNDPROC or by turning case sensitive exports off.
+
+  o  You are exporting a cdecl function. If declared as
+         int myfunc( void );
+     export as _myfunc and turn case sensitive exports on (or
+     just use the _export keyword).
+
+     NOTE: When using the '_export' keyword, it must be used in
+           the prototype of the function. For example:
+               int FAR _export myfunc( int );
+
+
+PROBLEM:
+     C++ and DLL linking problems.
+
+SOLUTION:
+     Classes declared in the DLL need to be declared as the following:
+
+     class _export A
+     {
+        ...
+     };
+
+     When defined in the EXE, the same must be prototyped as:
+
+     class huge A
+     {
+          ...
+     };
+     // see User's Guide for more information
+
+     Then link with /c and /C on (both case sensitive link and case
+     sensitive exports ENABLED) when building BOTH the .DLL and the
+     calling.EXE.
+
+
+PROBLEM:
+     OWL and undefined symbols.
+
+SOLUTION:
+     If you're linking to the static libraries:
+          - with BC 2.0, link in owlwx.lib, tclasswx.lib, and
+            sallocwx.lib. (You don't need sallocwx.lib with BC
+            v 3.x ).
+
+          - do NOT define _CLASSDLL in the code generation
+            dialog, or before including owl.h.
+
+          - link with /c and /C. (from IDE, under linker
+            options, case sensitive link and case sensitive
+            exports).
+
+          - Do NOT compile with -K or unsigned char's on. You
+            will get several undefined symbols in this case.
+
+     If you're linking to the OWL .DLL, DO define _CLASSDLL before
+     including OWL.H, and use /c and /C linker options (both Case
+     Sensitive Link and Case Sensitive Exports ENABLED).
+
+
+PROBLEM:
+     With an OWL application, wsprintf is undefined in module when
+     linking to the static libraries.
+
+SOLUTION:
+     Link with /C (case sensitive exports ENABLED).
+
+
+PROBLEM:
+     _main is an undefined symbol.
+
+SOLUTION:
+     main is the entry point for every DOS C/C++ program. Make sure
+     you write a function called main (all lowercase) in your program.
+     If you have a project file loaded, make sure your source code
+     file (.c or .cpp file) which has main in it is listed in the .prj
+     file. Make sure generate underbars is turned on.
+
+
+PROBLEM:
+     iostream members, like << operator are undefined
+
+SOLUTION:
+     Turn options | compiler | code generation | unsigned chars off
+     (do not use -K on the command line).
+
+
+PROBLEM:
+     Getting undefined symbols LLSH, SCOPY FMUL, FDIV, etc
+
+SOLUTION:
+     Many of the helper functions have changed names from Turbo C
+     2.0 to Borland C++. This functions were called from Turbo C 2.0.
+     The solution is to recompile any .OBJ or .LIB them with Borland
+     C++.
+
+
+SNOOPING AT THE REAL NAMES:
+---------------------------
+An .OBJ file is a collection of records. When you call a function or
+reference a symbol not defined in your module, the compiler generates
+an external definition record in the OBJ. This external definition
+record has the symbol which the linker must resolve. When you define a
+function, or make storage for some data, the compiler generates a
+public definition record for that module (unless you declared the item
+as static, that makes it private to that module). One of the tasks of
+the Linker is to match Public Definitions and External
+Definitions(PUBDEFs and EXTDEFs).
+
+To see the symbols the LINKER has to deal with, use TDUMP.EXE provided
+with the Borland C++ package. For example:
+
+    tdump -m -oiEXTDEF some.obj
+
+The above shows all the EXTDEF (external definition) records in an .OBJ
+file. Be sure to add the -m option when coding in C++.
+
+    tdump -m -oiPUBDEF some.obj
+
+The above will display all the PUBDEF (public definition) records.
+
+Let's assume you've purchased a third party library and a symbol
+provided the library is unresolved; the possible steps in
+identifying the problem could include:
+
+     - Create a Listing of symbols in the Library using TLIB. For
+       example:
+          TLIB NEWLIB.LIB, NEWLIB.LST
+
+     - TDUMP the .OBJ file which was created from the .C/.CPP
+       module calling the desired function.
+          TDUMP  -m -oiEXTDEF MYCODE.OBJ MYCODE.LST
+
+     - Attempt to find any discrepancies between the name in
+       NEWLIB.LST and the one in MYCODE.LST and ascertain that
+       the Library does indeed provide the desired function.
+
+Windows Programmers will find the IMPDEF.EXE utility (in addition to
+TDUMP and TLIB) a very useful tool to help identify unresolved symbols
+when DLLs and/or Import Libraries are involved.
+
+
+===================================================================
+4.  Borland Open Architecture:  Name Mangling
+===================================================================
+There are four basic forms of encoded names in Borland C++:
+
+1. @className@functionName$args
+
+This encoding denotes a member function Name belonging to
+class Name and having arguments args.
+
+Class names are encoded directly. The following example shows a
+className in an encoded name:
+
+      @className@...
+
+The class name may be followed by a single digit; the digit value
+contains the following bits (these can be combined):
+
+    0x01 : the class uses a far vtable
+
+    0x02 : the class uses the -po calling convention
+
+    0x04 : the class has an RTTI-compatible virtual table; this bit is
+           only used when encoding the name of the virtual table for
+           the class
+
+The digit is encoded as an ASCII representation of the bit mask
+value, with 1 subtracted (so that, for example, the class prefix for a
+class 'myfunc' that uses far vtables would be '@myfunc@0').
+
+See the next section on the encoding of function names and argument
+types.
+
+2. @functionName$args
+
+This form of encoding denotes a function functionName with arguments
+args.
+
+3. @className@dataMember
+
+This form of encoding denotes a static data member dataMember
+belonging to class className. Names of classes and data members are
+encoded directly. The following example shows a member myMember in
+class myClass:
+
+      @myClass@myMember
+
+4. @className@
+
+This name denotes a virtual table for a class className. As mentioned
+previously, class names are encoded directly.
+
+
+Encoding of nested and template classes
+---------------------------------------
+The following form encodes a name of a class lexically nested within
+another class:
+
+  @outer@inner@...
+
+A template instance class encodes the name of the template class, along
+with the actual template arguments, in the following way:
+
+  %templateName$arg1$arg2 ..... $argn%
+
+Each actual argument starts with a letter, specifying the kind of
+argument it is:
+
+  o  t type argument
+
+  o  i nontype integral argument
+
+  o  g nontype nonmember pointer argument
+
+  o  m nontype member pointer argument
+
+The first letter is followed by the encoded type of the argument. For
+a type argument, this code also represents the argument's actual
+value. For other kinds of arguments, the type code is followed by $and
+the argument value, encoded as an ASCII number or symbol name. An
+instance of template<class T, int size> whose name is
+vector<long,100>is encoded as shown in the following example:
+
+  %vector$tl$ii$100%
+
+
+Encoding of function names
+--------------------------
+The encoded function Name might denote either a function name, a
+function such as a function such as a constructor or destructor, an
+overloaded operator, or a type conversion.
+
+
+Ordinary functions
+------------------
+Ordinary function names are encoded directly, as shown in the
+following examples:
+
+  foo(int) --> @foo$qi sna::foo(void) --> @sna@foo$qv
+
+The string $qi denotes the integer argument of function myfunc();'$qv'
+denotes no arguments in sna::myfunc.
+
+
+Constructors, destructors, and overloaded operators
+---------------------------------------------------
+The following information covers argument encoding in more
+detail. Constructors, destructors, and overloaded operators encoded
+with a $bcharacter sequence, followed by a character sequence from the
+following table:
+
+            Character        Meaning Sequence
+            _________________________________
+
+            ctr              constructor
+            dtr              destructor
+            add              +
+            adr              &
+            and              &
+            arow             ->
+            arwm             ->*
+            asg              =
+            call             ()
+            cmp              ~
+            coma             ,
+            dec              --
+            dele             delete
+            div              /
+            eql              ==
+            geq              >=
+            gtr              >
+            inc              ++
+            ind              *
+            land             &&
+            lor              ||
+            leq              <=
+            lsh              <<
+            lss              <
+            mod              %
+            mul              *
+            neq              !=
+            new              new
+            not              !
+            or               |
+            rand             &=
+            rdiv             /=
+            rlsh             <<=
+            rmin             -=
+            rmod             %=
+            rmul             *=
+            ror              |=
+            rplu             +=
+            rrsh             >>=
+            rsh              >>
+            rxor             ^=
+            sub              -
+            subs             []
+            xor              ^
+            nwa              new[]
+            dla              delete []
+            __________________________________
+
+The following examples show how arguments are encoded with character
+sequences, add, ctr, and dtr from the previous table:
+
+  operator+(int)  -->     @$badd$qi plot::plot() --> @plot@$bctr$qv
+  plot::~plot()   --> @plot@$bdtr$qv
+
+The string $qv denotes no arguments in the plot constructor or
+destructor.
+
+
+Type conversions
+----------------
+Encoding of type conversions accomplished with the $o character
+sequence, followed by distinguishing return type of the conversion as
+part of function name. The return type follows the rules for argument
+encoding, explained later. The lack of arguments in one version is
+made explicit in the mangling by adding $qv the end of the encoded
+string.
+
+Example:
+
+  myfunc::operator int() --> @myfunc@$oi$qv myfunc::operator char *()
+  -->     @myfunc@$opzc$qv
+
+The i following $o in the first example denotes int; the pzc in the
+second example denotes a near pointer to an unsigned char.
+
+
+Encoding of arguments
+----------------------
+The number and combinations of function arguments make argument
+encoding the most complex aspect of name mangling.
+
+Argument lists for functions begin with the characters $q. Type
+qualifiers are then encoded as shown in the following table:
+         _____________________________
+
+          Character   Meaning Sequence
+         _____________________________
+
+           up          huge
+           ur          _seg
+           u           unsigned
+           z           signed
+           x           const
+           w           volatile
+           ____________________________
+
+Encoding of built-in types follows that for applicable type
+qualifiers, in accordance with the following table:
+
+           ______________________________
+
+             Character   Meaning Sequence
+           ______________________________
+
+             v           void
+             c           char
+             s           short
+             i           int
+             l           long
+             f           float
+             d           double
+             g           long double
+             e           ...
+           ______________________________
+
+Encoding of non-built-in types follows that for applicable type
+qualifiers, in accordance with the following table:
+
+         ______________________________
+
+           Character   Meaning Sequence
+         ______________________________
+
+           <a digit>   (an enumeration or class name)
+           p           near *
+           r           near &
+           m           far &
+           n           far *
+           a           array
+           M           member pointer (followed by class and
+                       base type)
+           ______________________________
+
+The appearance of one or more digits indicates that an enumeration or
+class name follows; the value of the digit(s) denotes the length of
+the name, as shown in the following examples:
+
+  foo::myfunc(myClass near&)      is mangled as @foo@myfunc$qr7myClass
+  foo::myfunc(anotherClass near&) is mangled as
+  @foo@myfunc$qr12anotherClass
+
+A character x or w may appear after p, r, m, or n to denote a constant
+or volatile type qualifier, respectively. The character q appearing
+after one of these characters denotes a function with arguments the
+follow in the encoded name, up to the appearance of a $ character, and
+finally a return type is encoded. The following example show how these
+encoding rules are applied:
+
+  @foo@myfunc$qpxzc      is mangled as foo::myfunc(const char near*)
+  @func1$qxi is mangled as   func1(const int) @foo@myfunc$qpqii$i is
+  mangled as foo:myfunc(int (near*)(int,int))
+
+Array types are encoded as a, followed by a dimension encoded as an
+ASCII decimal number and a $, and finally the element type, as shown
+in the following example.
+
+  myfunc( int (*x)[20] )    is mangled as @myfunc$qpa20$i
+
+Encoded arguments are concatenated in the order of appearance in the
+function call. The character t followed by an ASCII character encodes
+the arguments when a number of identical non-builtin types are
+function arguments. The ASCII character, ranging from ASCII 31H -
+39Hand 61H - 7FH (1 to 9 and a onward), denotes which argument type to
+duplicate, as shown in the following example:
+
+  @plot@func1$qdddiiilllpzctata is unmangled to plot::func1(double,
+          double, double, int, int, int, long, long, long, char near*,
+          char near*, char near*)
+
+The two duplicate ta character sequences at the end of the encoded
+name denote the tenth argument, encoded as pzc.
+
+/*************************************************************************/
+

@@ -1,0 +1,26 @@
+#       Make file for the HEAP Object Oriented Programming Example
+#       Copyright (c) 1993 by Borland International, Inc.
+#
+#       make -B              To build memtest.exe
+#       make -B -DDEBUG      To build the debug version of memtest.exe
+
+!if $d(DEBUG)
+ASMDEBUG=/zi
+LINKDEBUG=/v
+!else
+ASMDEBUG=
+LINKDEBUG=
+!endif
+
+memtest.exe : mem.obj memtest.obj display.obj
+   tlink $(LINKDEBUG) memtest+mem+display
+
+mem.obj : mem.asm vmtutil.inc mem.inc
+   tasm /c $(ASMDEBUG) /m /DMDL=small mem.asm
+
+memtest.obj : memtest.asm vmtutil.inc mem.inc
+   tasm /c $(ASMDEBUG) /m /DMDL=small memtest.asm
+
+display.obj : display.asm
+   tasm /c $(ASMDEBUG) /m /DMDL=small display.asm
+

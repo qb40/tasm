@@ -1,0 +1,125 @@
+##########################################################################
+# Make file for Turbo Assembler Thunk95 sample project.
+#   Copyright (c) 1996 by Borland International, All Rights Reserved
+#
+#       make -B                 Will build App32.exe and all components
+#       make -B -DDEBUG         Will build the debug version of App32.exe
+#
+##########################################################################
+#
+# Data alignment is forced to 4-bytes in 32-bit code and 2-bytes in
+# 16-bit code to take on the defaults of the thunk compiler. By
+# default, the Borland compilers use byte alignment and the thunk
+# compiler can be made to comply using the -p and -P switches to set
+# 16-bit and 32-bit alignment respectively.
+#
+##########################################################################
+.autodepend
+
+CCOPT=-w+ -DSTRICT
+ASMOPT16=/utthk /DIS_16
+ASMOPT32=/utthk /DIS_32 /ml
+
+!if $d(DEBUG)
+ ASMDBG=/zi
+ CCDBG=/v
+ LNKDBG=/v /s
+!else
+ ASMDBG=
+ CCDBG=
+ LNKDBG=
+!endif
+
+#-------------- Governing rule
+all: app32.exe dll16.dll
+
+#-------------- 32-bit executable target
+app32.exe: dll32.lib app32.obj app32.res
+   tlink32 $(LNKDBG) -Tpe -aa -V4.0 -c @&&|
+c0w32.obj+
+app32.obj
+app32.exe
+app32.map
+dll32.lib+
+import32.lib+
+cw32i.lib
+   # no DEF file
+app32.res
+|
+
+app32.obj: app32.cpp
+   bcc32 $(CCOPT) $(CCDBG) -c -tW -a4 $**
+
+app32.res: app32.rc
+   brc32 -r -foapp32.res app32.rc
+
+#-------------- 32-bit DLL target
+dll32.lib: dll32.dll
+   implib dll32.lib dll32.dll
+
+dll32.dll: dll32.obj ThkObj32.obj dll32.def
+   tlink32 $(LNKDBG) -Tpd -aa -V4.0 -c @&&|
+c0d32.obj+
+dll32.obj+
+ThkObj32.obj
+dll32.dll
+dll32.map
+import32.lib+
+cw32i.lib
+dll32.def
+|
+
+dll32.obj: dll32.cpp
+   bcc32 -c $(CCOPT) $(CCDBG) -tWD -a4 dll32.cpp
+
+ThkObj32.obj: ThunkObj.asm
+   tasm32 $(ASMOPT32) $(ASMDBG) ThunkObj.asm, ThkObj32.obj, ThkObj32.lst
+
+#-------------- 16-bit DLL target
+dll16.dll: dll16.obj ThkObj16.obj tools.obj dll16.def
+   tlink -Twd -c -C -V4.0 $(LNKDBG) @&&|
+c0dl.obj+
+dll16.obj+
+thkobj16.obj+
+tools.obj
+dll16.dll
+dll16.map
+import.lib+
+crtldll.lib
+dll16.def
+|
+
+dll16.obj: dll16.cpp
+   bcc -c $(CCOPT) $(CCDBG) -tWD -ml dll16.cpp
+
+#
+# Tasm32 will only generate 32-bit debug information, so you cannot
+# generate debug info in the 16-bit thunk module.
+#
+ThkObj16.obj: ThunkObj.asm
+   tasm32 $(ASMOPT16) ThunkObj.asm, ThkObj16.obj, ThkObj16.lst
+
+tools.obj: tools.cpp
+   bcc -c $(CCOPT) $(CCDBG) -tWD -ml tools.cpp
+
+#-------------- Shared thunk object
+#
+#  Note: byte alignment settings are default values for the thunk
+# compiler.
+#
+ThunkObj.asm: ThunkObj.thk
+   thunk /p2 /P4 ThunkObj.thk
+
+#-------------- Cleanup
+Clean:
+   if exist *.obj del *.obj
+   if exist *.lst del *.lst
+   if exist *.res del *.res
+   if exist *.map del *.map
+   if exist *.tr2 del *.tr2
+   if exist *.td2 del *.td2
+   if exist dll16.dll del dll16.dll
+   if exist dll32.dll del dll32.dll
+   if exist dll32.lib del dll32.lib
+   if exist app32.exe del app32.exe
+   if exist thunkobj.asm del thunkobj.asm

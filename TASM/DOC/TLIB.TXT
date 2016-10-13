@@ -1,0 +1,453 @@
+/*************************************************************************/
+                                 TLIB.TXT
+                              TURBO ASSEMBLER
+
+This file contains details on using TLIB with TASM.
+
+--------------------------------------------------------------------
+                        TABLE OF CONTENTS
+                        - - - - - - - - -
+   Using IMPLIB: The import librarian
+   Using IMPDEF: The module-definition file manager
+      Classes in a DLL
+      Functions in a DLL
+   Using TLIB: the Turbo Librarian
+      Why use object module libraries?
+      The TLIB command line
+         Using response files
+         Using case-sensitive symbols: The /C option
+         Creating an extended dictionary: The /E option
+         Setting the page size: The /P option
+         Removing comment records: The /0 option
+         The operation list
+      Examples
+
+--------------------------------------------------------------------
+
+This chapter describes several tools that let you work with library
+files.
+
+  o  IMPLIB creates import libraries, and IMPDEF creates module
+     definition files (.DEF files). Import libraries and module
+     definition files provide information to the linker about
+     functions imported from dynamic-link libraries (DLLs).
+
+  o  TLIB is a utility that manages libraries of individual .OBJ
+     (object module) files. A library is a convenient tool for
+     dealing with a collection of object modules as a single unit.
+
+
+Using IMPLIB: The import librarian
+==================================
+The IMPLIB utility creates import libraries. IMPLIB takes as input
+DLLs, module definition files, or both, and produces an import library
+as output. When you add a DLL as a target, the project manager
+compiles and links the DLL's dependent files to create the .DLL file,
+then runs IMPLIB to create a .LIB file.
+
+Import libraries contain records. Each record contains the name of a
+DLL, and specifies where in the DLL the imported functions reside.
+These records are bound to the application by TLINK or the IDE linker,
+and provide Windows with the information necessary to resolve DLL
+function calls. An import library can be substituted for part or all
+of the IMPORTS section of a module definition file.
+
+If you've created a Windows application, you've already used at least
+one import library, IMPORT.LIB, the import library for the standard
+Windows DLLs.
+
+An import library lists some or all of the exported functions for one
+or more DLLs. IMPLIB creates an import library directly from DLLs or
+from module definition files for DLLs (or a combination of the two).
+
+To create an import library for a DLL, type
+
+	IMPLIB Options LibName [DefFiles...|DLLs...]
+
+where 'Options' is an optional list of one or more IMPLIB options,
+'LibName' is the name for the new import library, 'DefFiles' is a list
+of one or more existing module definition files for one or more DLLs,
+and 'DLLs' is a list of one or more existing DLLs. You must specify at
+least one DLL or module definition file.
+
+A DLL can also have an extension of .EXE or .DRV, not just .DLL.
+
+Options must be lowercase and preceded by either a hyphen or a slash.
+
+Option		Description
+------		-----------
+-c		Accepts case-sensitive symbols. If you have two symbols
+		that differ only in case (like MYSYM and mysym) and you
+		don't use -c, IMPLIB uses the first symbol and treats
+		the second one as a duplicate.
+
+-i		Tells IMPLIB to ignore WEP, the Windows exit procedure
+		required to end a DLL. Use this option if you are
+		specifying more than one DLL on the IMPLIB command line.
+
+-w		No warnings.
+
+
+Using IMPDEF: The module-definition file manager
+================================================
+IMPDEF takes as input a DLL name, and produces as output a module
+definition file with an export section containing the names of
+functions exported by the DLL. The syntax is
+
+	IMPDEF DestName.DEF SourceName.DLL
+
+This creates a module definition file named 'DestName'.DEF from the
+file 'SourceName'.DLL. The resulting module definition file would look
+something like this:
+
+	LIBRARY     FileName
+
+	DESCRIPTION 'Description'
+
+	EXPORTS
+		ExportFuncName      @Ordinal
+		ExportFuncName      @Ordinal
+
+where 'FileName' is the DLL's root file name, 'Description' is the
+value of the DESCRIPTION statement if the DLL was previously linked
+with a module definition file that included a DESCRIPTION statement,
+'ExportFuncName' names an exported function, and 'Ordinal' is that
+function's ordinal value (an integer).
+
+
+Classes in a DLL
+----------------
+IMPDEF is useful for a DLL that uses C++ classes. If you use the
+_export keyword when defining a class, all of the non-inline member
+functions and static data members for that class are exported. It's
+easier to let IMPDEF make a module definition file for you because it
+lists all the exported functions, and automatically includes the
+member functions and static data members.
+
+Since the names of these functions are mangled, it would be tedious to
+list them all in the EXPORTS section of a module definition file
+simply to create an import library from the module definition file. If
+you use IMPDEF to create the module definition file, it includes the
+ordinal value for each exported function. If the exported name is
+mangled, IMPDEF also includes that function's unmangled, original name
+as a comment following the function entry. So, for instance, the
+module definition file created by IMPDEF for a DLL that used C++
+classes would look something like this:
+
+	LIBRARY     FileName
+
+	DESCRIPTION 'Description'
+
+	EXPORTS
+		MangledExportFuncName  @Ordinal ; ExportFuncName
+		MangledExportFuncName  @Ordinal ; ExportFuncName
+
+where 'FileName' is the DLL's root file name, 'Description' is the
+value of the DESCRIPTION statement if the DLL was previously linked
+with a module definition file that included a DESCRIPTION statement,
+'MangledExportFuncName' provides the mangled name, 'Ordinal' is that
+function's ordinal value (an integer), and 'ExportFuncName' gives the
+function's original name.
+
+
+Functions in a DLL
+------------------
+IMPDEF creates an editable source file that lists all the exported
+functions in the DLL. You can edit this .DEF file to contain only
+those functions that you want to make available to a particular
+application, then run IMPLIB on the edited .DEF file. This results in
+an import library that contains import information for a specific
+subset of a DLL's export functions.
+
+Suppose you're distributing a DLL that provides functions to be used
+by several applications. Every export function in the DLL is defined
+with _export. Now, if all the applications used all the DLL's exports,
+then you could use IMPLIB to make one import library for the DLL. You
+could deliver that import library with the DLL, and it would provide
+import information for all of the DLL's exports. The import library
+could be linked to any application, thus eliminating the need for the
+particular application to list every DLL function it uses in the
+IMPORTS section of its module definition file.
+
+But let's say you want to give only a few of the DLL's exports to a
+particular application. Ideally, you want a customized import library
+to be linked to that application--an import library that provides
+import information only for the subset of functions that the
+application uses. All of the other export functions in the DLL are
+hidden to that client application.
+
+To create an import library that satisfies these conditions, run
+IMPDEF on the compiled and linked DLL. IMPDEF produces a module
+definition file that contains an EXPORT section listing all of the
+DLL's export functions. You can edit that module definition file,
+remove the EXPORTS section entries for those functions you don't want
+in the customized import library, and then run IMPLIB on the module
+definition file. The result is an import library that contains import
+information for only those export functions listed in the EXPORTS
+section of the module definition file.
+
+
+Using TLIB: the Turbo Librarian
+===============================
+When it modifies an existing library, TLIB always creates a copy of
+the original library with a .BAK extension.
+
+You can use TLIB to build and modify your own libraries, libraries
+furnished by other programmers, or commercial libraries you've
+purchased. You can also use TLIB to:
+
+  o  Create a new library from a group of object modules.
+
+  o  Add object modules or other libraries to an existing library.
+
+  o  Remove object modules from an existing library.
+
+  o  Replace object modules from an existing library.
+
+  o  Extract object modules from an existing library.
+
+  o  List the contents of a new or existing library.
+
+
+Why use object module libraries?
+--------------------------------
+When you program, you often create a collection of useful functions.
+With modular programming, you are likely to split those functions into
+many separately compiled source files. Any particular program might
+use only a subset of functions from the entire collection.
+
+An object module library manages a collection of functions and
+classes. When you link your program with a library, the linker scans
+the library and automatically selects only those modules needed for
+the current program.
+
+
+The TLIB command line
+---------------------
+The TLIB command line takes the following general form, where items
+listed in square brackets are optional:
+
+	tlib [@respfile] [option] libname [operations] [, listfile]
+
+
+Option		Description
+------		-----------
+@respfile	The path and name of the response file you want to
+		include. You can specify more than one response file.
+
+libname 	The DOS path name of the library you want to create or
+		manage. Every TLIB command must be given a libname.
+		Wildcards are not allowed. TLIB assumes an extension
+		of .LIB if none is given. (It's best to use only the
+		.LIB extension.) NOTE: If the named library does not
+		exist and there are 'add' operations, TLIB creates the
+		library.
+
+/C		The case-sensitive flag. This option is not normally
+		used.
+
+/E		Creates Extended Dictionary.
+
+/Psize		Sets the library page size to 'size'.
+
+/0		Removes comment records from the library.
+
+operations	The list of operations TLIB performs. Operations can
+		appear in any order. If you only want to examine the
+		contents of the library, don't give any operations.
+
+listfile	The name of the file that lists library contents. It
+		must be preceded by a comma. No listing is produced if
+		you don't give a file name. The listing is an
+		alphabetical list of each module. The entry for each
+		module contains an alphabetical list of each public
+		symbol defined in that module. The default extension
+		for the 'listfile' is .LST. You can direct the listing
+		to the screen by using the 'listfile' name CON, or to
+		the printer by using the name PRN.
+
+
+Using response files
+- - - - - - - - - - -
+When you use a large number of operations, or if you find yourself
+repeating certain sets of operations over and over, you will probably
+want to use response files. A response file is an ASCII text file that
+contains all or part of a TLIB command. Using response files, you can
+build TLIB commands larger than would fit on one command line.
+Response files can:
+
+  o  Contain more than one line of text; use the ampersand
+     character (&) at the end of a line to indicate that
+     another line follows.
+
+  o  Include a partial list of commands. You can combine
+     options from the command line with options in a response file.
+
+  o  Be used with other response files in a single TLIB command line.
+
+
+Using case-sensitive symbols: The /C option
+- - - - - - - - - - - - - - - - - - - - - -
+TLIB maintains a dictionary of all public symbols defined in the
+modules of the library. When you add a module to a library, its symbol
+must be unique. If you try to add a module to the library that
+duplicates a symbol, TLIB displays an error message and doesn't add
+the module.
+
+NOTE: Don't use /C if you plan to use the library with other linkers
+or let other people use the library.
+
+Because some linkers aren't case-sensitive, TLIB rejects symbols that
+differ only in case (for example, the symbols 'lookup' and 'LOOKUP'
+are treated as duplicates). TLINK, however, can distinguish case, so
+if you use your library only with TLINK, you can use the TLIB /C
+option to add a module to a library that includes symbols differing
+only in case.
+
+
+Creating an extended dictionary: The /E option
+- - - - - - - - - - - - - - - -  - - - - - - - -
+To increase the linker's capacity for large links, you can use TLIB to
+create an extended dictionary and append it to the library file. This
+dictionary contains, in a compact form, information that is not
+included in the standard library dictionary and that lets the linker
+(TLINK) preprocess library files so that any unnecessary modules are
+not preprocessed.
+
+To create an extended dictionary for a library that you're modifying,
+use the /E option when you start TLIB to add, remove, or replace
+modules in the library. You can also use the /E option to create an
+extended dictionary for an existing library that you don't want to
+modify. For example, if you type "TLIB /E mylib" the linker appends an
+extended dictionary to the specified library.
+
+If you use /E to add a library module containing a C++ class with a
+virtual function, you'll get the error message "Library contains
+COMDEF records--extended dictionary not created".
+
+
+Setting the page size: The /P option
+- - - - - - - - - - - - - - - - -  -
+Every DOS library file contains a dictionary that appears at the end
+of the .LIB file, following all of the object modules. For each module
+in the library, the dictionary contains a 16-bit address of that
+particular module within the .LIB file; this address is given in terms
+of the library page size (it defaults to 16 bytes).
+
+The library page size determines the maximum combined size of all
+object modules in the library, which cannot exceed 65,536 pages. The
+default (and minimum) page size of 16 bytes allows a library of about
+1 MB in size. To create a larger library, use the /P option to
+increase the page size. The page size must be a power of 2, and it
+cannot be smaller than 16 or larger than 32,768.
+
+All modules in the library must start on a page boundary. For example,
+in a library with a page size of 32 (the lowest possible page size
+higher than the default 16), an average of 16 bytes is lost per object
+module in padding. If you attempt to create a library that is too
+large for the given page size, TLIB issues an error message and
+suggests that you use /P with the next available higher page size.
+
+
+Removing comment records: The /0 option
+- - - - - - - - - - - - - - - - - - - -
+Use the /0 option to remove comment records, which reduces the size of
+a library. For example, you might have debugging or browsing
+information in a library, but you no longer need to use that
+information; the /0 option removes that information.
+
+
+The operation list
+- - - - - - - - - -
+The operation list describes what actions you want TLIB to do. It
+consists of a sequence of operations given one after the other. Each
+operation consists of a one- or two-character action symbol followed
+by a file or module name. You can put whitespace around either the
+action symbol or the file or module name but not in the middle of a
+two-character action or in a name.
+
+You can put as many operations as you like on the command line, up to
+126 characters. The order of the operations is not important. TLIB
+always applies the operations in a specific order:
+
+ 1) All extract operations are done first.
+
+ 2) All remove operations are done next.
+
+ 3) All add operations are done last.
+
+TLIB finds the name of a module by stripping any drive, path, and
+extension information from the given file name. TLIB always assumes
+reasonable defaults. For example, to add a module that has an .OBJ
+extension from the current directory, you need to supply only the
+module name, not the path and .OBJ extension.
+
+TLIB recognizes three action symbols (-, +, *), which you can use
+singly or combined in pairs for a total of five distinct operations.
+The action symbols and what they do are listed here:
+
+Symbol	Name		Description
+------	----		-----------
++	Add		TLIB adds the named file to the library. If
+			the file has no extension, TLIB assumes an
+			extension of .OBJ. If the file is itself a
+			library (with a .LIB extension), then the
+			operation adds all of the modules in the named
+			library to the target library. If a module
+			being added already exists, TLIB displays a
+			message and does not add the new module.
+
+-	Remove		TLIB removes the named module from the
+			library. If the module does not exist in the
+			library, TLIB displays a message. A remove
+			operation needs only a module name. TLIB lets
+			you enter a full path name with drive and
+			extension included, but ignores everything
+			except the module name.
+
+*	Extract		TLIB creates the named file by copying the
+			corresponding module from the library to the
+			file. If the module does not exist, TLIB
+			displays a message and does not create a file.
+			If the named file already exists, it is
+			overwritten.
+
+-*	Extract &	TLIB copies the named module to the
+			corresponding file name and then removes it
+			from the library.
+
+-+	Replace		TLIB replaces the named module with the
+			corresponding file.
+
+
+Examples
+--------
+These examples demonstrate some of the things you can do with TLIB:
+
+  o  To create a library named MYLIB.LIB with modules X.OBJ,
+     Y.OBJ, and Z.OBJ, type "tlib mylib +x +y +z".
+
+  o  To create a library named MYLIB.LIB and get a listing
+     in MYLIB.LST too, type "tlib mylib +x +y +z, mylib.lst".
+
+  o  To replace module X.OBJ with a new copy, add A.OBJ and
+     delete Z.OBJ from MYLIB.LIB, type "tlib mylib -+x +a -z".
+
+  o  To create a new library (ALPHA) with modules A.OBJ,
+     B.OBJ...G.OBJ using a response file:
+
+     First create a text file, ALPHA.RSP, with
+
+		@^+a.obj +b.obj +c.obj &
+		   +d.obj +e.obj +f.obj &
+		   +g.obj
+
+     Then use the TLIB command, which produces a listing file named
+     ALPHA.LST: "tlib alpha @alpha.rsp, alpha.lst".
+
+NOTE: You can't directly rename modules in a library. To rename a
+module, extract and remove it, rename the file just created, then add
+it back into the library.
+
+/**************************** END OF FILE ********************************/
+

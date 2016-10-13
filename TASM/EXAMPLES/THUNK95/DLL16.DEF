@@ -1,0 +1,30 @@
+;----------------------------------------------------------------------------
+; Thunk95 example program
+; Copyright (c) 1996 by Borland International, All Rights Reserved
+;----------------------------------------------------------------------------
+DESCRIPTION  'Module definition file for 16-bit DLL'
+EXETYPE  WINDOWS
+
+CODE    PRELOAD MOVEABLE DISCARDABLE
+DATA    PRELOAD MOVEABLE SINGLE
+
+; If the 16-bit DLL is not marked for Windows 4.0,
+; the DllEntryPoint function will not be called.
+SUBSYSTEM 4.0
+
+HEAPSIZE 5120
+
+; Since pascal calling convention is being used in the 16-bit world,
+; all exported symbols will have been force to upper case by the
+; compiler and assembler.
+
+EXPORTS
+   DLLENTRYPOINT        @1 RESIDENTNAME
+   THUNKOBJ_THUNKDATA16 @2
+   MULTIPLY16           @3
+   STRINGLOOKUP16       @4
+   GETRECORD16          @5
+
+IMPORTS
+   C16THKSL01        = KERNEL.631
+   THUNKCONNECT16    = KERNEL.651

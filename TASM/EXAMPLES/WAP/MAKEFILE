@@ -1,0 +1,31 @@
+#   Make file for Turbo Assembler WAP example.
+#   Copyright (c) 1996 by Borland International, Inc.
+
+#       make -B                 Will build wap.exe
+#       make -B -DDEBUG         Will build the debug version of wap.exe
+
+NAME = WAP
+OBJS = $(NAME).obj
+DEF  = $(NAME).def
+
+!if $d(DEBUG)
+TASMDEBUG=/zi
+LINKDEBUG=/v
+!else
+TASMDEBUG=
+LINKDEBUG=
+!endif
+
+!if $d(MAKEDIR)
+IMPORT=$(MAKEDIR)\..\lib\import
+THEINCLUDE=/i$(MAKEDIR)\..\include
+!else
+IMPORT=import
+THEINCLUDE=
+!endif
+
+$(NAME).EXE: $(OBJS) $(DEF)
+  tlink /Twe $(LINKDEBUG) $(OBJS),$(NAME),, $(IMPORT), $(DEF)
+
+.asm.obj:
+   tasm $(TASMDEBUG) /ml $(THEINCLUDE) $&.asm

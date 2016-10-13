@@ -1,0 +1,9 @@
+#       makefile for SHOW87.COM
+#       Copyright (c) 1988, 1996 by Borland International, Inc.
+#
+#       make -B              To build show87.com
+
+show87.com:
+    tasm show87.asm
+    tlink /t show87.obj
+

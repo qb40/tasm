@@ -1,0 +1,141 @@
+/***************************************************************************/
+                                 TSM_RDME.TXT
+                               TURBO ASSEMBLER
+
+                 Welcome to Borland Turbo Assembler and Tools 5.0
+                 ------------------------------------------------
+
+-----------------
+TABLE OF CONTENTS
+-----------------
+1. Installation
+2. New Features
+3. Assembling and Linking with TASM 5.0
+4. TASM utilities
+5. Important Information
+   a) Object File Format
+   b) Out of Memory and MAKESWAP
+   c) Make under Windows NT
+   d) Creating 16-bit import libraries from .DEF files
+   e) Resource compilers: 32-bit command-line versions
+
+
+----------------
+1. Installation
+----------------
+For details on installing Turbo Assembler and Tools 5.0, see the file
+TSM_INST.TXT
+
+
+----------------
+2. New Features
+----------------
+New TASM 5.0 features:
+  - Enhanced MASM compatibility
+  - TASM32.EXE Thunk Compiler compatibility for Windows 95 flat thunking.
+New Turbo Debugger 5.0 features:
+  - Dual monitor support under Win95 (TDW: -do, TD32: -vd)
+  - Debugger support for new C++ language constructs (bool, namespaces, etc.)
+  - 16-bit debugging support under Windows NT with TDW.EXE
+
+
+----------------------------------------
+3. Assembling and linking with TASM 5.0
+----------------------------------------
+The TASM 5.0 package includes three different assemblers:
+
+  TASM.EXE           16-bit real-mode assembler
+  TASMX.EXE          16-bit protected-mode assembler
+  TASM32.EXE         32-bit protected-mode assembler
+
+All three assemblers are capable of producing both 16- and 32-bit
+object files, depending on the directives contained in your assembler
+source files. If you produce a 16-bit object file, then you must use
+the 16-bit linker (TLINK.EXE) to link your application. If you produce
+a 32-bit object file, then you must use the 32-bit linker (TLINK32.EXE)
+to link your application.
+
+TASM.EXE is a real-mode assembler, meaning that it is capable of using
+only the lower 640K of memory addressable by DOS. If you're assembling
+larger applications, use either TASMX.EXE or TASM32.EXE. Both of these
+assemblers use the DPMI server to take advantage of extended memory.
+
+The biggest difference between the three assemblers is the type of
+debug information they produce when you assemble your source files with
+the /zi command-line option. Both TASM.EXE and TASMX.EXE produce
+only 16-bit debug information. TASM32.EXE produces only 32-bit debug
+information. If you plan to use Turbo Debugger to debug your assembler
+application, then you must assemble 16-bit files with either TASM.EXE
+or TASMX.EXE. To produce 32-bit debug information, then you must assemble
+your files with TASM32.EXE.
+
+
+-----------------
+4. TASM utilities
+-----------------
+
+TASM 5.0 ships with several debuggers and utilities to help you create and
+debug your assembly language programs.  For more information on Turbo
+Debugger and the tools provided with TASM, refer to the text files located
+in the DOC subdirectory located under your main TASM directory.
+
+
+-------------------------
+5. Important Information
+-------------------------
+
+   a) Object File Format
+------------------------
+
+Turbo Assembler generates object modules (.OBJ files) which conform to the
+Intel OMF (Object Module Format) specification.  In addition, the provided
+tools (such as TLINK32 and TLIB) and libraries accept only this format;
+there is no support in the linker or librarian for COFF object modules
+produced by Microsoft C tools.
+
+
+   b) Out of Memory and MAKESWAP
+--------------------------------
+
+If you get "Out of Memory" errors from DOS when running the command-line
+tools, create a swap file with the MAKESWAP utility.  (Note that this
+applies to DOS only, not to DOS boxes opened under Windows.) MAKESWAP
+takes the size of the file to create in KBytes, for example:
+
+    MAKESWAP 12000
+
+will create a 12MB swap file in the current directory called EDPMI.SWP for
+use by Borland command line tools.  To enable the swap file, use the
+DPMI32 environment variable by issuing the following command at the DOS
+prompt:
+
+    set DPMI32=SWAPFILE <location of swap file>\EDPMI.SWP
+
+
+   c) Make under Windows NT
+---------------------------
+
+If you encounter difficulties running MAKE under Windows NT, try running
+MAKER instead.
+
+
+   d) Creating 16-bit import libraries from .DEF files
+------------------------------------------------------
+
+Use the /o IMPLIB switch when you are creating 16-bit import libraries
+from .DEF files.  This prevents IMPLIB from generating extensions for
+import entry module names.
+
+
+   e) Resource compilers: 32-bit command-line versions
+------------------------------------------------------
+
+The 32-bit command-line resource compilers (br*.exe) that ship with TASM
+5.0 do not run under 16-bit environments of DOS or Windows 3.1; you must
+run these 32-bit tools from the DOS boxes in Windows 95 or Windows NT.  If
+do not have access to Win95 or NT, you must use the 16-bit resource
+compilers (such as the ones shipped with TASM 4.0 or Borland C++ 4.5) to
+compile resources from the command line.
+
+
+/********************************* END OF FILE ****************************/

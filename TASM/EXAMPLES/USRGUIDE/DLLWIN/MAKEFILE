@@ -1,0 +1,29 @@
+# Make file for Turbo Assembler DLLWIN sample project.
+#   Copyright (c) 1988, 1993 by Borland International, Inc.
+
+#       make -B                 Will build DLLWIN.exe
+#       make -B -DDEBUG         Will build the debug version of DLLWIN.exe
+
+!if $d(DEBUG)
+TASMDEBUG=/zi
+LINKDEBUG=/v /s
+!else
+TASMDEBUG=
+LINKDEBUG=
+!endif
+
+!if $d(MAKEDIR)
+THEINCLUDE=-I$(MAKEDIR)\..\include
+!else
+THEINCLUDE=
+!endif
+
+TASM_OPTIONS = $(TASMDEBUG) $(THEINCLUDE)
+
+dllwin.exe: dllwin.obj dllwin.def
+  TLINK /Twd $(LINKDEBUG) dllwin, dllwin, dllwin,,dllwin
+
+dllwin.obj: dllwin.asm
+  TASM $(TASM_OPTIONS) dllwin,,
+
+

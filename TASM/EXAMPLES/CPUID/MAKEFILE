@@ -1,0 +1,19 @@
+#  Makefile for cpuid example.
+#
+#  Copyright (c) 1996 by Borland International, Inc.
+#
+#  Usage:   make -B         # cpuid example
+#           make -B -DDEBUG # cpuid example with debug info
+#
+
+!if $d(DEBUG)
+TASMDEBUG=/zi
+LINKDEBUG=/v
+!else
+TASMDEBUG=
+LINKDEBUG=
+!endif
+
+cpuid.exe:
+      tasm  $(TASMDEBUG) cpuid.asm
+      tlink $(LINKDEBUG) cpuid.obj

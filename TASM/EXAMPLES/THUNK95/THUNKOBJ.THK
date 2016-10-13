@@ -1,0 +1,81 @@
+//========================================================================
+// Thunk95 example program
+// Copyright (c) 1996 by Borland International, All Rights Reserved
+//========================================================================
+
+enablemapdirect3216=true;  // calls from 32- to 16-bit module.
+
+// Since the thunk compiler does not appear to support any type of
+// preprocessor directives, we cannot make conditional use of tools.h,
+// where these structures are actually defined. So, we must make sure
+// that the script definitions stay in sync with those in the C/C++
+// header files.
+
+//
+// The thunk compiler supports only integral types and structures. It
+// does not support enum's or floating point numbers. So, we will use
+// an unsigned short in place of enums and appropriately sized
+// structures for reals. Pointers can also be used for reals.
+//
+typedef unsigned char UCHAR;
+typedef unsigned short USHORT;
+typedef unsigned int UINT;
+typedef unsigned long ULONG;
+
+typedef UCHAR ENUM;
+typedef struct tagFloat { ULONG l; } TFloat;                   // 32 bits
+typedef struct tagDouble { ULONG v1; ULONG v2; } TDouble;      // 64 bits
+typedef struct tagLDouble { TDouble v1; USHORT v2; } TLDouble; // 80 bits
+
+typedef struct tagEmpRecord
+   {
+   USHORT         empNum;
+   char           name [20];
+   char           family [20];
+   UINT           status;
+   int            dept;
+   TFloat         wage;
+   TDouble        ytdEarnings;
+   ULONG          ssn;
+   } EmpRecord;
+
+typedef EmpRecord* LpEmpRecord;
+
+//
+// Note that function prototypes do not use any type of storage
+// specifier. The thunk compiler assumes that the functions will use
+// Pascal calling convention on the 16-bit side and Standard Call
+// calling convention on the 32-bit side. These are defaults in the
+// Microsoft compiler. Using the Borland compiler, you should use the
+// PASCAL macro in the C/C++ header files as it will expand to
+// __pascal in 16-bit targets and __stdcall in 32-bit targets.
+//
+long Multiply16(int i, long l)
+   {
+   }
+
+void MultiplyReal16(TDouble v1, TDouble v2, TLDouble* result)
+   {
+   result = inout;
+   }
+
+int StrTableSize16()
+   {
+   }
+
+bool StringLookup16(int index, char * bfr)
+   {
+   bfr = inout;
+   }
+
+int EmpCount16()
+   {
+   }
+
+bool GetRecord16(int index, EmpRecord* rec)
+   {
+   rec = inout;
+   }
+
+
+

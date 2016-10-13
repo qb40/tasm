@@ -1,0 +1,7 @@
++ support long file names for "tasm32 *"
++ assebling source filename begining with 'ï'
++ fix @Cpu symbol value for ".286p", ".386p", ".486p", ".586p", ".686p", "p286", "p386", "p486", "p586", "p686" directives
++ fix code generate for LOOPED & LOOPEW
++ enabled @@,@B,@F labels in IDEAL mode
++ support 2^32 labels for conditional directives
++ other bugs

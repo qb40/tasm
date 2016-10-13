@@ -1,0 +1,48 @@
+//----------------------------------------------------------------------------
+// Thunk95 example program
+// Copyright (c) 1996 by Borland International, All Rights Reserved
+//----------------------------------------------------------------------------
+#include "app32.rh"
+
+ID_MAINMENU MENU
+{
+ POPUP "&Application"
+ {
+  MENUITEM "&About\tF1", CM_ABOUT
+  MENUITEM SEPARATOR
+  MENUITEM "&Exit\tAlt-F4", CM_EXIT
+ }
+
+ POPUP "&Thunk Call"
+ {
+  MENUITEM "&Multiply\tCtrl-M", CM_MULTIPLY
+  MENUITEM "Multiply &Real\tCtrl-R", CM_MULTIPLYREAL
+  MENUITEM "&String Lookup\tCtrl-S", CM_GETSTRING
+  MENUITEM "&Employee Lookup\tCtrl-E", CM_GETEMPLOYEE
+ }
+
+}
+
+
+ID_MAINMENU ACCELERATORS
+{
+ VK_F1, CM_ABOUT, VIRTKEY
+ "^M", CM_MULTIPLY, ASCII, CONTROL
+ "^R", CM_MULTIPLYREAL, ASCII, CONTROL
+ "^S", CM_GETSTRING, ASCII, CONTROL
+ "^E", CM_GETEMPLOYEE, ASCII, CONTROL
+}
+
+
+ID_ABOUTDLG DIALOG 6, 15, 194, 119
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "About App32"
+FONT 8, "MS Sans Serif"
+{
+ DEFPUSHBUTTON "OK", IDOK, 72, 96, 50, 14
+ CTEXT "App32", -1, 30, 19, 134, 8
+ CTEXT "Windows '95 Flat Thunking Example", -1, 30, 34, 134, 8
+ CTEXT "Copyright \xA9 1996", -1, 30, 49, 134, 8
+ CTEXT "Borland, International", -1, 30, 64, 134, 8
+}
+
